@@ -71,7 +71,7 @@ const Contact = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/contact',
+        'https://e-mart-backend-1.onrender.com/api/contact',
         formData
       );
 
