@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, FileText, Code2, User, Mail, LogIn } from 'lucide-react';
+import { FileText, Code2, User, Mail, LogIn } from 'lucide-react';
 
 const Hero = () => {
   return (
