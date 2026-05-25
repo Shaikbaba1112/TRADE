@@ -8,9 +8,11 @@ const Navbar = () => {
   const navLinks = [
     { name: 'About', href: '#about' },
     { name: 'Experience', href: '#experience' },
-    { name: 'Projects', href: '#projects' },
-    { name: 'Skills', href: '#skills' },
+    { name: 'Products', href: '#projects' },
+    { name: 'Tech', href: '#skills' },
     { name: 'Achievements', href: '#achievements' },
+    { name: 'Contact', href: '#contact' },
+  
   ];
 
   return (
@@ -22,7 +24,7 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <a href="#" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            SB
+            E-MART
           </a>
 
           {/* Desktop Menu */}

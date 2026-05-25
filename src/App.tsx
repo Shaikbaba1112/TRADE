@@ -7,6 +7,9 @@ import Skills from './components/Skills';
 import Achievements from './components/Achievements';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import Signin from './components/Signin';
+
+
 
 function App() {
 
@@ -20,9 +23,12 @@ function App() {
       <Skills />
       <Achievements />
       <Contact />
+      <Signin />
       <Footer />
     </>
   )
 }
 
 export default App
+
+

@@ -4,19 +4,26 @@ import { MapPin, Calendar } from 'lucide-react';
 const Experience = () => {
   const experiences = [
     {
-      title: 'Web Developer',
-      company: 'Qveto Technologies',
-      period: 'Sep 2025 – Nov 2025',
+      title: 'New Products',
+      company: 'E-MART',
+      period: 'Since – May-2026',
       location: 'Hyderabad, India',
-      type: 'Internship',
-      description: 'Worked on cutting-edge AI/ML projects and full-stack web applications in a research-driven environment.',
-      achievements: [       
-        'Built custom OpenAI-powered chatbots with context-aware conversation handling',
-        'Implemented React frontends with responsive designs and optimal user experience',
-        'Designed and developed Node.js backends with RESTful APIs and database integration',
-        'Managed application deployments using Docker containers and Render platform',
+      type: 'Buy Now',
+      description:
+        'Responsible for identifying market opportunities and developing innovative product concepts.',
+      achievements: [
+        'Conducted market research and competitive analysis to identify customer needs and trends',
+        'Collaborated with cross-functional teams to design and prototype new product ideas',
+        'Led user testing and feedback sessions to refine product concepts and ensure market fit',
+        'Successfully launched multiple new products, resulting in increased revenue and customer satisfaction',
       ],
-      technologies: ['React', 'Node.js', 'Express', 'MongoDB', 'YOLOv8', 'OpenAI API', 'Docker', 'Render', 'Python', 'JavaScript'],
+      technologies: [
+        'Market Research',
+        'Product Design',
+        'Prototyping',
+        'User Testing',
+        'Product Launch',
+      ],
     },
   ];
 
@@ -26,87 +33,212 @@ const Experience = () => {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900"
+      className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-900 via-slate-950 to-black"
     >
-      <div className="max-w-6xl mx-auto">
-        <motion.h2
-          initial={{ y: 20, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-4xl font-bold text-white mb-4"
-        >
-          Experience
-        </motion.h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-12"></div>
+      {/* Background Glow */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
 
-        <div className="space-y-8">
+      {/* Grid Effect */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+
+      <div className="relative max-w-6xl mx-auto z-10">
+        {/* Heading */}
+        <motion.h2
+          initial={{ y: 30, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-4xl sm:text-5xl font-extrabold text-white mb-4"
+        >
+          Marketing & Product Development{' '}
+          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            Experience
+          </span>
+        </motion.h2>
+
+        <motion.div
+          initial={{ width: 0 }}
+          whileInView={{ width: '120px' }}
+          transition={{ duration: 1 }}
+          className="h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-14"
+        ></motion.div>
+
+        {/* Experience Cards */}
+        <div className="space-y-10">
           {experiences.map((exp, index) => (
             <motion.div
               key={index}
-              initial={{ x: -50, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
+              initial={{ y: 60, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="bg-slate-800/50 border border-slate-700 rounded-lg p-8 hover:border-blue-400/50"
+              whileHover={{
+                scale: 1.02,
+                boxShadow:
+                  '0px 0px 40px rgba(34,211,238,0.18)',
+              }}
+              className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-8 group transition-all duration-500"
             >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-white">{exp.title}</h3>
-                  <p className="text-blue-400 font-semibold">{exp.company}</p>
-                </div>
-                <span className="px-3 py-1 bg-blue-500/20 border border-blue-400/30 text-blue-300 rounded-full text-sm">
-                  {exp.type}
-                </span>
-              </div>
+              {/* Animated Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-700"></div>
 
-              <div className="flex flex-wrap gap-6 text-gray-400 mb-6">
-                <div className="flex items-center gap-2">
-                  <Calendar size={18} />
-                  {exp.period}
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin size={18} />
-                  {exp.location}
-                </div>
-              </div>
+              {/* Floating Glow */}
+              <div className="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
 
-              <p className="text-gray-300 mb-4">{exp.description}</p>
+              <div className="relative z-10">
+                {/* Header */}
+                <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+                  <div>
+                    <motion.h3
+                      whileHover={{ x: 5 }}
+                      className="text-3xl font-extrabold text-white mb-1"
+                    >
+                      {exp.title}
+                    </motion.h3>
 
-              <div className="mb-6">
-                <h4 className="font-semibold text-white mb-3">Key Achievements</h4>
-                <ul className="space-y-2">
-                  {exp.achievements.map((achievement, i) => (
-                    <li key={i} className="text-gray-300 flex items-start gap-3">
-                      <span className="text-blue-400 mt-1">✓</span>
-                      {achievement}
-                    </li>
+                    <p className="text-cyan-400 font-semibold text-lg">
+                      {exp.company}
+                    </p>
+                  </div>
+
+                  <motion.span
+                    whileHover={{
+                      scale: 1.08,
+                    }}
+                    className="px-5 py-2 bg-blue-500/20 border border-cyan-400/30 text-cyan-300 rounded-full text-sm font-semibold shadow-lg"
+                  >
+                    {exp.type}
+                  </motion.span>
+                </div>
+
+                {/* Info */}
+                <div className="flex flex-wrap gap-8 text-gray-400 mb-6">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar
+                      size={18}
+                      className="text-cyan-400"
+                    />
+                    {exp.period}
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-2"
+                  >
+                    <MapPin
+                      size={18}
+                      className="text-cyan-400"
+                    />
+                    {exp.location}
+                  </motion.div>
+                </div>
+
+                {/* Description */}
+                <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                  {exp.description}
+                </p>
+
+                {/* Achievements */}
+                <div className="mb-8">
+                  <h4 className="font-bold text-white text-xl mb-5">
+                    Key Achievements
+                  </h4>
+
+                  <ul className="space-y-4">
+                    {exp.achievements.map((achievement, i) => (
+                      <motion.li
+                        key={i}
+                        initial={{ x: -20, opacity: 0 }}
+                        whileInView={{ x: 0, opacity: 1 }}
+                        transition={{ delay: i * 0.1 }}
+                        whileHover={{ x: 5 }}
+                        className="text-gray-300 flex items-start gap-4 bg-slate-900/30 border border-slate-700 rounded-xl p-4 hover:border-cyan-400/40 transition-all duration-300"
+                      >
+                        <span className="text-cyan-400 mt-1 text-lg">
+                          ✦
+                        </span>
+
+                        {achievement}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Technology Tags */}
+                <div className="flex flex-wrap gap-3">
+                  {exp.technologies.map((tech, i) => (
+                    <motion.span
+                      key={tech}
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      transition={{ delay: i * 0.08 }}
+                      whileHover={{
+                        scale: 1.1,
+                        y: -3,
+                      }}
+                      className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm shadow-lg cursor-pointer"
+                    >
+                      {tech}
+                    </motion.span>
                   ))}
-                </ul>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {exp.technologies.map((tech) => (
-                  <span key={tech} className="px-3 py-1 bg-slate-700/50 border border-slate-600 text-gray-300 rounded-full text-sm">
-                    {tech}
-                  </span>
-                ))}
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
+        {/* CTA Section */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 30, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="mt-12 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-lg p-8 text-center"
+          whileHover={{
+            scale: 1.02,
+            boxShadow:
+              '0px 0px 40px rgba(59,130,246,0.2)',
+          }}
+          className="relative overflow-hidden mt-16 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-10 text-center backdrop-blur-xl"
         >
-          <h3 className="text-2xl font-bold text-white mb-3">Looking for New Opportunities</h3>
-          <p className="text-gray-300 mb-6">
-            I'm actively seeking full-time opportunities where I can contribute to innovative projects, work with cutting-edge technologies, and continue growing as a developer.
-          </p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold">
-            Get In Touch
-          </button>
+          {/* Glow */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10"></div>
+
+          <div className="relative z-10">
+            <motion.h3
+              animate={{
+                opacity: [0.8, 1, 0.8],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+              }}
+              className="text-3xl font-extrabold text-white mb-4"
+            >
+              Looking for New Users
+            </motion.h3>
+
+            <p className="text-gray-300 mb-8 text-lg max-w-2xl mx-auto">
+              We are always looking for new users to join our
+              community and help us improve our products.
+            </p>
+
+            <motion.button
+              whileHover={{
+                scale: 1.08,
+                boxShadow:
+                  '0px 0px 30px rgba(34,211,238,0.5)',
+              }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl"
+            >
+              Get In Touch
+            </motion.button>
+          </div>
         </motion.div>
       </div>
     </motion.section>

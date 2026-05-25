@@ -3,20 +3,60 @@ import { Code2, Brain, Users, Zap } from 'lucide-react';
 
 const About = () => {
   const skills = [
-    { icon: Code2, title: 'Full-Stack Expertise', desc: 'Proficient in MERN stack with hands-on experience in building scalable web applications from frontend to backend.' },
-    { icon: Brain, title: 'AI Integration', desc: 'Specialized in integrating AI/ML solutions into web applications, including chatbots and computer vision systems.' },
-    { icon: Users, title: 'Team Collaboration', desc: 'Experienced in working with cross-functional teams and delivering projects in agile environments.' },
-    { icon: Zap, title: 'Performance Focus', desc: 'Passionate about creating optimized, scalable solutions with clean code and best practices.' },
+    {
+      icon: Code2,
+      title: 'Electronics',
+      desc: 'Expertise in designing and developing electronic devices and systems.',
+    },
+
+    {
+      icon: Brain,
+      title: 'AI Smart Products',
+      desc: 'Specialized in integrating AI/ML solutions into web applications, including chatbots and computer vision systems.',
+    },
+
+    {
+      icon: Users,
+      title: 'Clothes',
+      desc: 'Experience in designing and developing clothing and accessories.',
+    },
+
+    {
+      icon: Zap,
+      title: 'Energy Products',
+      desc: 'Expertise in designing and developing energy-efficient products.',
+    },
   ];
 
   const stats = [
-    { label: 'Months Experience', value: '6+' },
-    { label: 'Projects Completed', value: '3+' },
-    { label: 'Technologies Mastered', value: '5+' },
-    { label: 'Research Papers', value: '1+' },
+    {
+      label: 'Months Experience in Product Development',
+      value: '6+',
+    },
+
+    {
+      label: 'Products',
+      value: '3000+',
+    },
+
+    {
+      label: 'Customer Satisfaction',
+      value: '5 Star',
+    },
+
+    {
+      label: 'Daily Active Users',
+      value: '1000+',
+    },
   ];
 
-  const technologies = ['React', 'Node.js', 'MongoDB', 'TypeScript', 'AI/ML', 'Docker'];
+  const technologies = [
+    'Electronics',
+    'Gadgets',
+    'Smart Home',
+    'Audio',
+    'Accessories',
+  ];
 
   return (
     <motion.section
@@ -24,78 +64,174 @@ const About = () => {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-950"
+      className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-slate-900 to-black"
     >
-      <div className="max-w-6xl mx-auto">
+      {/* Animated Background Glow */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+
+      {/* Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+
+      <div className="relative max-w-6xl mx-auto z-10">
+        {/* Heading */}
         <motion.h2
           initial={{ y: 20, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true }}
-          className="text-4xl font-bold text-white mb-4"
+          transition={{ duration: 0.6 }}
+          className="text-4xl sm:text-5xl font-extrabold text-white mb-4"
         >
-          About Me
+          About{' '}
+          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            E-MART
+          </span>
         </motion.h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-12"></div>
 
-        <div className="grid md:grid-cols-2 gap-12 mb-12">
+        <motion.div
+          initial={{ width: 0 }}
+          whileInView={{ width: '100px' }}
+          transition={{ duration: 1 }}
+          className="h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-12"
+        ></motion.div>
+
+        {/* Content */}
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
+          {/* Left Side */}
           <motion.div
-            initial={{ x: -50, opacity: 0 }}
+            initial={{ x: -60, opacity: 0 }}
             whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-gray-300 leading-relaxed"
+            className="relative bg-slate-800/30 backdrop-blur-xl border border-slate-700 rounded-3xl p-8 shadow-2xl"
           >
-            <p className="mb-4">
-              I'm a passionate Full-Stack Developer with expertise in the MERN stack and a strong focus on creating innovative web applications that solve real-world problems.
-            </p>
-            <p className="mb-4">
-              During my internship at Qveto Technologies, I had the opportunity to work on Website Devlopment projects and full-stack applications. I collaborated closely with AI teams to integrate machine learning models into web applications.
-            </p>
-            <p>
-              I'm particularly enthusiastic about performance optimization, scalable architecture design, and staying up-to-date with the latest web technologies.
+            {/* Glow */}
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
+
+            <p className="text-gray-300 leading-relaxed text-lg mb-6">
+              E-MART is a cutting-edge online electronics store
+              dedicated to providing customers with the latest and
+              greatest in tech products. With a seamless shopping
+              experience and a vast selection of gadgets, we make it
+              easy to stay connected and powered up.
             </p>
 
-            <div className="flex flex-wrap gap-2 mt-6">
-              {technologies.map((tech) => (
-                <span key={tech} className="px-3 py-1 bg-blue-500/20 border border-blue-400/30 text-blue-300 rounded-full text-sm">
+            <p className="text-gray-300 leading-relaxed text-lg mb-6">
+              Our mission is to make high-quality electronics
+              accessible to everyone, offering competitive prices and
+              exceptional customer service. Whether you're looking for
+              the latest smartphone or a reliable laptop, E-MART has
+              you covered.
+            </p>
+
+            {/* Technology Tags */}
+            <div className="flex flex-wrap gap-3 mt-8">
+              {technologies.map((tech, index) => (
+                <motion.span
+                  key={tech}
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{
+                    scale: 1.1,
+                    y: -3,
+                  }}
+                  className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm shadow-lg cursor-pointer"
+                >
                   {tech}
-                </span>
+                </motion.span>
               ))}
             </div>
           </motion.div>
 
+          {/* Stats Section */}
           <motion.div
-            initial={{ x: 50, opacity: 0 }}
+            initial={{ x: 60, opacity: 0 }}
             whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-2 gap-5"
           >
-            {stats.map((stat) => (
+            {stats.map((stat, index) => (
               <motion.div
                 key={stat.label}
-                whileHover={{ scale: 1.05 }}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-center hover:border-blue-400/50"
+                initial={{ y: 30, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.15 }}
+                whileHover={{
+                  scale: 1.08,
+                  rotate: 1,
+                  boxShadow:
+                    '0px 0px 30px rgba(34,211,238,0.25)',
+                }}
+                className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-6 text-center group"
               >
-                <div className="text-3xl font-bold text-blue-400">{stat.value}</div>
-                <div className="text-sm text-gray-400">{stat.label}</div>
+                {/* Animated Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+
+                <div className="relative z-10">
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.08, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                    }}
+                    className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2"
+                  >
+                    {stat.value}
+                  </motion.div>
+
+                  <div className="text-sm text-gray-400">
+                    {stat.label}
+                  </div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
         </div>
 
+        {/* Skills Section */}
         <div className="grid md:grid-cols-4 gap-6">
           {skills.map((skill, index) => (
             <motion.div
               key={skill.title}
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 40, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
+              transition={{ delay: index * 0.15 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -10 }}
-              className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-blue-400/50"
+              whileHover={{
+                y: -12,
+                scale: 1.03,
+                boxShadow:
+                  '0px 0px 30px rgba(59,130,246,0.25)',
+              }}
+              className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-6 group transition-all duration-500"
             >
-              <skill.icon className="w-12 h-12 text-blue-400 mb-4" />
-              <h3 className="text-white font-semibold mb-2">{skill.title}</h3>
-              <p className="text-gray-400 text-sm">{skill.desc}</p>
+              {/* Hover Glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+
+              {/* Floating Glow Circle */}
+              <div className="absolute -top-8 -right-8 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl"></div>
+
+              <motion.div
+                whileHover={{
+                  rotate: 10,
+                  scale: 1.15,
+                }}
+                className="relative z-10"
+              >
+                <skill.icon className="w-14 h-14 text-cyan-400 mb-5" />
+              </motion.div>
+
+              <h3 className="relative z-10 text-white text-xl font-bold mb-3">
+                {skill.title}
+              </h3>
+
+              <p className="relative z-10 text-gray-400 text-sm leading-relaxed">
+                {skill.desc}
+              </p>
             </motion.div>
           ))}
         </div>
