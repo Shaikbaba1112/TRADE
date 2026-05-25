@@ -23,8 +23,8 @@ const Contact = () => {
     {
       icon: Mail,
       label: 'Email',
-      value: 'trading@gmail.com',
-      href: 'mailto:trading@gmail.com',
+      value: 'e-mart@gmail.com',
+      href: 'mailto:e-mart@gmail.com',
     },
 
     {
@@ -37,7 +37,7 @@ const Contact = () => {
     {
       icon: User,
       label: 'LinkedIn',
-      value: 'Trading Academy',
+      value: 'linkedin.com/in/e-mart',
       href: 'https://linkedin.com',
     },
 
