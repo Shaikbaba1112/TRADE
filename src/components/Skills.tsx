@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import {
-  PhoneMissed,
   ShoppingCart,
   Laptop,
   Smartphone,
