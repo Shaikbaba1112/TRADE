@@ -8,7 +8,7 @@ const About = () => {
       title: 'Electronics',
       desc: 'Expertise in designing and developing electronic devices and systems.',
       image:
-        'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1550029402-8ea9bfe19f04?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDI2fHx8ZW58MHx8fHx8',
     },
 
     {
@@ -44,7 +44,7 @@ const About = () => {
 
     {
       label: 'Products Sold',
-      value: '3000+',
+      value: '80k+',
     },
 
     {
@@ -54,7 +54,7 @@ const About = () => {
 
     {
       label: 'Daily Active Users',
-      value: '1000+',
+      value: '10k+',
     },
   ];
 

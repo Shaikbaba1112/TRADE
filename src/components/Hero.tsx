@@ -220,45 +220,6 @@ const Hero = () => {
             className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-3xl opacity-30"
           ></motion.div>
 
-          {/* Floating Card 1 */}
-          <motion.div
-            animate={{
-              y: [0, -15, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-            }}
-            className="absolute -top-10 -left-10 bg-slate-800/70 border border-cyan-400/20 rounded-3xl p-5 backdrop-blur-xl shadow-2xl z-20"
-          >
-            <h3 className="text-cyan-400 text-xl font-bold">
-              10K+
-            </h3>
-
-            <p className="text-gray-400 text-sm">
-              Products Available
-            </p>
-          </motion.div>
-
-          {/* Floating Card 2 */}
-          <motion.div
-            animate={{
-              y: [0, 15, 0],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-            }}
-            className="absolute -bottom-10 -right-10 bg-slate-800/70 border border-blue-400/20 rounded-3xl p-5 backdrop-blur-xl shadow-2xl z-20"
-          >
-            <h3 className="text-blue-400 text-xl font-bold">
-              24/7
-            </h3>
-
-            <p className="text-gray-400 text-sm">
-              Customer Support
-            </p>
-          </motion.div>
 
           {/* Main Hero Card */}
           <motion.div
@@ -338,7 +299,7 @@ const Hero = () => {
                 </motion.h2>
 
                 <p className="text-cyan-300 text-lg font-medium">
-                  Future Electronics Store
+                  AI and the Future Way of Shopping
                 </p>
               </div>
 
