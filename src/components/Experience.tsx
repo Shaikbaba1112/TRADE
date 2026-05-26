@@ -9,6 +9,8 @@ const Experience = () => {
       period: 'Since – May-2026',
       location: 'Hyderabad, India',
       type: 'Buy Now',
+      image:
+        'https://plus.unsplash.com/premium_photo-1670462145715-c32d0c91e81b?q=80&w=1100&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       description:
         'Responsible for identifying market opportunities and developing innovative product concepts.',
       achievements: [
@@ -86,6 +88,53 @@ const Experience = () => {
               {/* Floating Glow */}
               <div className="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
               <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+              {/* NEW IMAGE SECTION */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="relative overflow-hidden rounded-3xl mb-8"
+              >
+                <motion.img
+                  animate={{
+                    scale: [1, 1.03, 1],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                  }}
+                  src={exp.image}
+                  alt="E-MART Products"
+                  className="w-full h-[320px] object-cover rounded-3xl"
+                />
+
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                {/* Floating Badge */}
+                <motion.div
+                  animate={{
+                    y: [0, -6, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                  }}
+                  className="absolute top-5 right-5 bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-5 py-2 rounded-full font-bold shadow-2xl"
+                >
+                  Trending Products
+                </motion.div>
+
+                {/* Bottom Content */}
+                <div className="absolute bottom-6 left-6">
+                  <h3 className="text-white text-3xl font-black">
+                    E-MART
+                  </h3>
+
+                  <p className="text-cyan-300 text-lg">
+                    Smart Electronics & Innovation
+                  </p>
+                </div>
+              </motion.div>
 
               <div className="relative z-10">
                 {/* Header */}

@@ -1,121 +1,101 @@
 import { motion } from 'framer-motion';
-import { PhoneMissed } from 'lucide-react';
+import {
+  PhoneMissed,
+  ShoppingCart,
+  Laptop,
+  Smartphone,
+  Headphones,
+  Cpu,
+} from 'lucide-react';
 
 const Skills = () => {
   const skillCategories = [
     {
-      category: 'When I Buy Products',
-      subtitle: 'checking out the latest tech and gadgets',
-      proficiency: 'Expert 🧠',
+      category: 'Smart Electronics',
+      subtitle: 'Latest premium gadgets & devices',
+      icon: Smartphone,
+      image:
+        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop',
       skills: [
         'Smartphones',
         'Laptops',
-        'Smart Home Devices',
-        'Audio Equipment',
-        'Wearables',
         'Gaming Consoles',
-        'Drones',
-        'Cameras',
-        'TVs',
-        'Accessories',
+        'Smart Watches',
+        'Premium Accessories',
       ],
     },
 
     {
-      category: 'When I Develop Products',
-      subtitle:
-        'Building innovative solutions and cutting-edge applications',
-      proficiency: 'Expert ⚙️',
+      category: 'Modern Technology',
+      subtitle: 'Future-ready electronic innovations',
+      icon: Cpu,
+      image:
+        'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
       skills: [
-        'new product development',
-        'market research',
-        'product design',
-        'prototyping',
-        'user testing',
-        'product launch',
-        'AI integration',
-        'IoT development',
-        'energy-efficient design',
-        'clothing design',
+        'AI Devices',
+        'IoT Products',
+        'Smart Home',
+        'Automation',
+        'Energy Efficient Tech',
       ],
     },
 
     {
-      category: 'When I Manage Users & Display Products',
-      subtitle:
-        'Ensuring seamless user experiences and reliable deployments',
-      proficiency: 'Advanced 🤖',
+      category: 'Audio & Entertainment',
+      subtitle: 'Immersive entertainment experience',
+      icon: Headphones,
+      image:
+        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200&auto=format&fit=crop',
       skills: [
-        'User satisfies',
-        'User Research',
-        'User Testing',
-        'Deployment',
-        'CI/CD',
-        'Cloud Services',
-        'Containerization',
-        'Monitoring',
-        'Performance Optimization',
-        'Security Best Practices',
+        'Headphones',
+        'Speakers',
+        'Gaming Audio',
+        'Music Systems',
+        'Wireless Audio',
       ],
     },
 
     {
-      category: 'When I Integrate AI into Products',
-      subtitle:
-        'Leveraging AI to enhance product functionality and user experience',
-      proficiency: 'Advanced 🧰',
+      category: 'Gaming & Performance',
+      subtitle: 'High performance gaming products',
+      icon: Laptop,
+      image:
+        'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
       skills: [
-        'AI-Powered Recommendations',
-        'Chatbots',
-        'Computer Vision',
-        'Natural Language Processing',
-        'Predictive Analytics',
-        'AI-Driven Personalization',
-        'AI Integration',
-        'Machine Learning Models',
-        'Data Analysis',
-        'AI Ethics',
+        'Gaming PCs',
+        'RTX Graphics',
+        'Mechanical Keyboards',
+        'Streaming Gear',
+        'Ultra Performance',
       ],
     },
   ];
 
   const tools = [
-    'E-MART Dashboard',
-    'Product Management Tools',
-    'Customer Relationship Management (CRM)',
-    'Analytics Platforms',
-    'Collaboration Tools',
-    'Project Management Software',
-    'Version Control Systems',
-    'CI/CD Pipelines',
-    'Cloud Services',
-    'Monitoring & Logging Tools',
+    'Smart Product Display',
+    'Fast Delivery',
+    '24/7 Support',
+    'Secure Payments',
+    'Premium Brands',
+    'Latest Gadgets',
   ];
 
   const webTech = [
-    'Smart Product Display',
-    'User Management Systems',
-    'AI Integration',
-    'IoT Connectivity',
-    'Energy Management Systems',
-    'E-commerce Platforms',
-    'Mobile App Development',
-    'API Development',
-    'Database Management',
-    'Security Best Practices',
+    'AI Recommendations',
+    'Smart Shopping',
+    'Secure Checkout',
+    'Cloud Integration',
+    'Mobile Experience',
+    'Fast Performance',
   ];
 
   const learning = [
-    'Latest Tech Trends',
-    'Emerging Gadgets',
-    'AI Innovations',
-    'Sustainable Energy Solutions',
-    'Smart Home Advancements',
-    'Wearable Technology',
-    'Health Tech Developments',
-    'Automotive Tech',
-    'Virtual Reality',
-    'Augmented Reality',
+    'Latest Electronics',
+    'Future Gadgets',
+    'AI Technology',
+    'Gaming Innovations',
+    'Smart Devices',
+    'Luxury Accessories',
   ];
 
   return (
@@ -128,7 +108,13 @@ const Skills = () => {
     >
       {/* Animated Background Glow */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+
+      {/* Floating Particles */}
+      <div className="absolute top-20 left-20 w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
+
+      <div className="absolute bottom-40 right-40 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
 
       {/* Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
@@ -142,9 +128,10 @@ const Skills = () => {
           viewport={{ once: true }}
           className="text-5xl sm:text-6xl font-extrabold text-white mb-4"
         >
-          Technologies &{' '}
+          Smart Tech &
           <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Products Analysis
+            {' '}
+            E-MART Products
           </span>
         </motion.h2>
 
@@ -155,7 +142,7 @@ const Skills = () => {
           className="h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-16"
         ></motion.div>
 
-        {/* Main Skill Cards */}
+        {/* Main Cards */}
         <div className="grid md:grid-cols-2 gap-8 mb-20">
           {skillCategories.map((category, index) => (
             <motion.div
@@ -165,67 +152,85 @@ const Skills = () => {
               transition={{ duration: 0.7, delay: index * 0.1 }}
               viewport={{ once: true }}
               whileHover={{
-                y: -10,
-                scale: 1.02,
+                y: -12,
+                scale: 1.03,
+                boxShadow:
+                  '0px 0px 40px rgba(34,211,238,0.25)',
               }}
-              className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-8 group shadow-2xl"
+              className="relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl shadow-2xl group"
             >
-              {/* Hover Glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-700"></div>
+              {/* Background Image */}
+              <div className="relative h-60 overflow-hidden">
+                <motion.img
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.8 }}
+                  src={category.image}
+                  alt={category.category}
+                  className="w-full h-full object-cover"
+                />
 
-              {/* Floating Light */}
-              <div className="absolute -top-16 -right-16 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
 
-              <div className="relative z-10">
-                <motion.h3
-                  whileHover={{ x: 5 }}
-                  className="text-2xl font-extrabold text-white mb-2"
-                >
-                  {category.category}
-                </motion.h3>
-
-                <p className="text-gray-400 text-sm mb-3">
-                  {category.subtitle}
-                </p>
-
-                <motion.p
+                {/* Floating Icon */}
+                <motion.div
                   animate={{
-                    opacity: [0.7, 1, 0.7],
+                    y: [0, -10, 0],
                   }}
                   transition={{
                     duration: 3,
                     repeat: Infinity,
                   }}
-                  className="text-cyan-400 font-semibold text-sm mb-6"
+                  className="absolute top-5 right-5 bg-cyan-400/20 border border-cyan-300/30 backdrop-blur-xl p-4 rounded-2xl"
                 >
-                  Proficiency {category.proficiency}
-                </motion.p>
+                  <category.icon
+                    className="text-cyan-300"
+                    size={34}
+                  />
+                </motion.div>
 
+                {/* Text */}
+                <div className="absolute bottom-6 left-6">
+                  <h3 className="text-3xl font-black text-white mb-2">
+                    {category.category}
+                  </h3>
+
+                  <p className="text-cyan-300 text-sm">
+                    {category.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
                 <div className="flex flex-wrap gap-3">
                   {category.skills.map((skill, i) => (
                     <motion.span
                       key={skill}
                       initial={{ scale: 0 }}
                       whileInView={{ scale: 1 }}
-                      transition={{ delay: i * 0.03 }}
+                      transition={{ delay: i * 0.05 }}
                       whileHover={{
                         scale: 1.1,
-                        y: -3,
+                        y: -4,
                         boxShadow:
-                          '0px 0px 15px rgba(34,211,238,0.4)',
+                          '0px 0px 20px rgba(34,211,238,0.4)',
                       }}
-                      className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm cursor-pointer backdrop-blur-sm"
+                      className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm cursor-pointer"
                     >
                       {skill}
                     </motion.span>
                   ))}
                 </div>
               </div>
+
+              {/* Glow */}
+              <div className="absolute -bottom-16 -right-16 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
             </motion.div>
           ))}
         </div>
 
-        {/* Daily Tools */}
+        {/* Featured Products */}
         <motion.div
           initial={{ y: 60, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -237,8 +242,16 @@ const Skills = () => {
           }}
           className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-10 mb-12"
         >
-          {/* Background Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10"></div>
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img
+              src="https://plus.unsplash.com/premium_photo-1728619312315-eb5c96dc8c70?q=80&w=1200&auto=format&fit=crop"
+              alt="E-MART"
+              className="w-full h-full object-cover opacity-20"
+            />
+
+            <div className="absolute inset-0 bg-black/70"></div>
+          </div>
 
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-3">
@@ -251,16 +264,17 @@ const Skills = () => {
                   repeat: Infinity,
                 }}
               >
-                <PhoneMissed className="text-cyan-400 w-8 h-8" />
+                <ShoppingCart className="text-cyan-400 w-8 h-8" />
               </motion.div>
 
               <h3 className="text-3xl font-extrabold text-white">
-                Daily New Products
+                Featured Electronics
               </h3>
             </div>
 
-            <p className="text-gray-400 text-sm mb-8">
-              Connect to E-MART to see the latest products
+            <p className="text-gray-300 text-sm mb-8 max-w-2xl">
+              Explore futuristic gadgets, smart devices and
+              premium electronics designed for the next generation.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -285,7 +299,7 @@ const Skills = () => {
 
         {/* Bottom Cards */}
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Web Technologies */}
+          {/* Technology Card */}
           <motion.div
             initial={{ x: -40, opacity: 0 }}
             whileInView={{ x: 0, opacity: 1 }}
@@ -295,18 +309,18 @@ const Skills = () => {
               y: -8,
               scale: 1.02,
             }}
-            className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-8 group"
+            className="relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+            <img
+              src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1200&auto=format&fit=crop"
+              alt="technology"
+              className="w-full h-60 object-cover"
+            />
 
-            <div className="relative z-10">
+            <div className="p-8">
               <h3 className="text-2xl font-bold text-white mb-4">
-                E-MART Technologies
+                E-MART Technology
               </h3>
-
-              <p className="text-gray-400 text-sm mb-6">
-                Core technologies for managing and displaying products
-              </p>
 
               <div className="flex flex-wrap gap-3">
                 {webTech.map((tech, i) => (
@@ -327,7 +341,7 @@ const Skills = () => {
             </div>
           </motion.div>
 
-          {/* Continuous Learning */}
+          {/* Trending Products */}
           <motion.div
             initial={{ x: 40, opacity: 0 }}
             whileInView={{ x: 0, opacity: 1 }}
@@ -338,12 +352,15 @@ const Skills = () => {
               boxShadow:
                 '0px 0px 30px rgba(34,211,238,0.2)',
             }}
-            className="relative overflow-hidden bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-cyan-400/30 rounded-3xl p-8 backdrop-blur-xl"
+            className="relative overflow-hidden rounded-3xl border border-cyan-400/30 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-xl"
           >
-            {/* Glow */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-400/10 rounded-full blur-3xl"></div>
+            <img
+              src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop"
+              alt="gaming"
+              className="w-full h-60 object-cover opacity-80"
+            />
 
-            <div className="relative z-10">
+            <div className="p-8">
               <motion.h3
                 animate={{
                   opacity: [0.8, 1, 0.8],
@@ -354,14 +371,8 @@ const Skills = () => {
                 }}
                 className="text-2xl font-extrabold text-white mb-4"
               >
-                Continuous Buying Products
+                Trending Products
               </motion.h3>
-
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                Always on the lookout for the latest products to
-                enhance my shopping experience and stay ahead of
-                trends.
-              </p>
 
               <div className="flex flex-wrap gap-3">
                 {learning.map((tech, i) => (
@@ -376,7 +387,7 @@ const Skills = () => {
                     }}
                     className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm backdrop-blur-sm"
                   >
-                    {tech} 📚
+                    {tech} ✨
                   </motion.span>
                 ))}
               </div>
