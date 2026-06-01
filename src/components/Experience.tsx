@@ -1,296 +1,215 @@
-import { motion } from 'framer-motion';
-import { MapPin, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, Clock, DollarSign, TrendingUp } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 const Experience = () => {
-  const experiences = [
-    {
-      title: 'New Products',
-      company: 'E-MART',
-      period: 'Since – May-2026',
-      location: 'Hyderabad, India',
-      type: 'Buy Now',
-      image:
-        'https://plus.unsplash.com/premium_photo-1670462145715-c32d0c91e81b?q=80&w=1100&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      description:
-        'Responsible for identifying market opportunities and developing innovative product concepts.',
-      achievements: [
-        'Conducted market research and competitive analysis to identify customer needs and trends',
-        'Collaborated with cross-functional teams to design and prototype new product ideas',
-        'Led user testing and feedback sessions to refine product concepts and ensure market fit',
-        'Successfully launched multiple new products, resulting in increased revenue and customer satisfaction',
-      ],
-      technologies: [
-        'Market Research',
-        'Product Design',
-        'Prototyping',
-        'User Testing',
-        'Product Launch',
-      ],
-    },
+  // ---------- Bitcoin hover effect ----------
+  const [coins, setCoins] = useState([]);
+  const coinId = useRef(0);
+  const sectionRef = useRef(null);
+  const throttleRef = useRef(false);
+
+  const addCoin = useCallback((e) => {
+    if (throttleRef.current) return;
+    throttleRef.current = true;
+    requestAnimationFrame(() => {
+      throttleRef.current = false;
+    });
+
+    const rect = sectionRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = coinId.current++;
+
+    setCoins((prev) => [...prev, { id, x, y }]);
+
+    setTimeout(() => {
+      setCoins((prev) => prev.filter((c) => c.id !== id));
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      coinId.current = 0;
+    };
+  }, []);
+  // ----------------------------------------
+
+  const rewards = [
+    { rank: "1st", reward: "$2,000" },
+    { rank: "2nd", reward: "$1,000" },
+    { rank: "3rd", reward: "$500" },
+    { rank: "4th-10th", reward: "$200 Credit Bonus" },
+    { rank: "11th-20th", reward: "30% Deposit Bonus" },
   ];
 
   return (
-    <motion.section
-      id="experience"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-900 via-slate-950 to-black"
+    <section
+      id="competition"
+      ref={sectionRef}
+      onMouseMove={addCoin}
+      className="relative py-24 overflow-hidden bg-[#050816]"
     >
-      {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-0 right-0 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1621264448270-9ef00e88a935?q=80&w=657&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15,
+        }}
+      />
 
-      {/* Grid Effect */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+      {/* Background Glow & Grid */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[150px]" />
+        <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:60px_60px]" />
+      </div>
 
-      <div className="relative max-w-6xl mx-auto z-10">
+      {/* Bitcoin particles */}
+      <AnimatePresence>
+        {coins.map((coin) => (
+          <motion.span
+            key={coin.id}
+            initial={{ opacity: 1, scale: 0, rotate: 0 }}
+            animate={{ opacity: 0, scale: 1.5, rotate: 360, y: -30 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: coin.x,
+              top: coin.y,
+              fontSize: "24px",
+              color: "#F7931A",
+              pointerEvents: "none",
+              zIndex: 100,
+              textShadow: "0 0 12px rgba(247,147,26,0.9)",
+            }}
+          >
+            ₿
+          </motion.span>
+        ))}
+      </AnimatePresence>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Heading */}
-        <motion.h2
-          initial={{ y: 30, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl sm:text-5xl font-extrabold text-white mb-4"
-        >
-          Marketing & Product Development{' '}
-          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Experience
-          </span>
-        </motion.h2>
-
         <motion.div
-          initial={{ width: 0 }}
-          whileInView={{ width: '120px' }}
-          transition={{ duration: 1 }}
-          className="h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-14"
-        ></motion.div>
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-20"
+        >
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 mb-6">
+            <Trophy className="text-yellow-400" size={18} />
+            <span className="text-yellow-300 font-semibold">
+              Competition Guide
+            </span>
+          </div>
 
-        {/* Experience Cards */}
-        <div className="space-y-10">
-          {experiences.map((exp, index) => (
+          <h2 className="text-5xl md:text-7xl font-black text-white mb-6">
+            How It
+            <span className="block bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
+              Works
+            </span>
+          </h2>
+
+          <p className="text-slate-300 max-w-3xl mx-auto text-xl">
+            Compete 15 Days. Rank Up. Win Rewards.
+          </p>
+        </motion.div>
+
+        {/* Timeline */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-20">
+          <motion.div
+            whileHover={{ y: -8 }}
+            className="bg-white/5 backdrop-blur-xl border border-yellow-500/20 rounded-3xl p-8"
+          >
+            <Clock className="text-yellow-400 mb-5" size={40} />
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Week 1: Build Foundation
+            </h3>
+            <p className="text-slate-300 leading-relaxed">
+              Trade a $10,000 demo account under real MT5 market conditions.
+              Focus on consistency, entries and risk management.
+            </p>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -8 }}
+            className="bg-white/5 backdrop-blur-xl border border-cyan-500/20 rounded-3xl p-8"
+          >
+            <TrendingUp className="text-cyan-400 mb-5" size={40} />
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Week 2: Leaderboard Battle
+            </h3>
+            <p className="text-slate-300 leading-relaxed">
+              Compete for ranking positions. Complete at least 10 trades.
+              Accounts exceeding 60% drawdown are removed.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Account Conditions */}
+        <div className="grid md:grid-cols-4 gap-6 mb-20">
+          {[
+            "$10,000 Demo",
+            "1:100 Leverage",
+            "MT5 Platform",
+            "FX • Metals • Commodities",
+          ].map((item) => (
             <motion.div
-              key={index}
-              initial={{ y: 60, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              whileHover={{
-                scale: 1.02,
-                boxShadow:
-                  '0px 0px 40px rgba(34,211,238,0.18)',
-              }}
-              className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-8 group transition-all duration-500"
+              key={item}
+              whileHover={{ y: -8 }}
+              className="bg-white/5 border border-slate-700 rounded-3xl p-6 text-center backdrop-blur-xl"
             >
-              {/* Animated Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-700"></div>
-
-              {/* Floating Glow */}
-              <div className="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
-
-              {/* NEW IMAGE SECTION */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="relative overflow-hidden rounded-3xl mb-8"
-              >
-                <motion.img
-                  animate={{
-                    scale: [1, 1.03, 1],
-                  }}
-                  transition={{
-                    duration: 6,
-                    repeat: Infinity,
-                  }}
-                  src={exp.image}
-                  alt="E-MART Products"
-                  className="w-full h-[320px] object-cover rounded-3xl"
-                />
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-
-                {/* Floating Badge */}
-                <motion.div
-                  animate={{
-                    y: [0, -6, 0],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                  }}
-                  className="absolute top-5 right-5 bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-5 py-2 rounded-full font-bold shadow-2xl"
-                >
-                  Trending Products
-                </motion.div>
-
-                {/* Bottom Content */}
-                <div className="absolute bottom-6 left-6">
-                  <h3 className="text-white text-3xl font-black">
-                    E-MART
-                  </h3>
-
-                  <p className="text-cyan-300 text-lg">
-                    Smart Electronics & Innovation
-                  </p>
-                </div>
-              </motion.div>
-
-              <div className="relative z-10">
-                {/* Header */}
-                <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
-                  <div>
-                    <motion.h3
-                      whileHover={{ x: 5 }}
-                      className="text-3xl font-extrabold text-white mb-1"
-                    >
-                      {exp.title}
-                    </motion.h3>
-
-                    <p className="text-cyan-400 font-semibold text-lg">
-                      {exp.company}
-                    </p>
-                  </div>
-
-                  <motion.span
-                    whileHover={{
-                      scale: 1.08,
-                    }}
-                    className="px-5 py-2 bg-blue-500/20 border border-cyan-400/30 text-cyan-300 rounded-full text-sm font-semibold shadow-lg"
-                  >
-                    {exp.type}
-                  </motion.span>
-                </div>
-
-                {/* Info */}
-                <div className="flex flex-wrap gap-8 text-gray-400 mb-6">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Calendar
-                      size={18}
-                      className="text-cyan-400"
-                    />
-                    {exp.period}
-                  </motion.div>
-
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className="flex items-center gap-2"
-                  >
-                    <MapPin
-                      size={18}
-                      className="text-cyan-400"
-                    />
-                    {exp.location}
-                  </motion.div>
-                </div>
-
-                {/* Description */}
-                <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                  {exp.description}
-                </p>
-
-                {/* Achievements */}
-                <div className="mb-8">
-                  <h4 className="font-bold text-white text-xl mb-5">
-                    Key Achievements
-                  </h4>
-
-                  <ul className="space-y-4">
-                    {exp.achievements.map((achievement, i) => (
-                      <motion.li
-                        key={i}
-                        initial={{ x: -20, opacity: 0 }}
-                        whileInView={{ x: 0, opacity: 1 }}
-                        transition={{ delay: i * 0.1 }}
-                        whileHover={{ x: 5 }}
-                        className="text-gray-300 flex items-start gap-4 bg-slate-900/30 border border-slate-700 rounded-xl p-4 hover:border-cyan-400/40 transition-all duration-300"
-                      >
-                        <span className="text-cyan-400 mt-1 text-lg">
-                          ✦
-                        </span>
-
-                        {achievement}
-                      </motion.li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Technology Tags */}
-                <div className="flex flex-wrap gap-3">
-                  {exp.technologies.map((tech, i) => (
-                    <motion.span
-                      key={tech}
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      transition={{ delay: i * 0.08 }}
-                      whileHover={{
-                        scale: 1.1,
-                        y: -3,
-                      }}
-                      className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm shadow-lg cursor-pointer"
-                    >
-                      {tech}
-                    </motion.span>
-                  ))}
-                </div>
-              </div>
+              <h3 className="text-yellow-400 font-bold text-xl">{item}</h3>
             </motion.div>
           ))}
         </div>
 
-        {/* CTA Section */}
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          whileHover={{
-            scale: 1.02,
-            boxShadow:
-              '0px 0px 40px rgba(59,130,246,0.2)',
-          }}
-          className="relative overflow-hidden mt-16 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-10 text-center backdrop-blur-xl"
-        >
-          {/* Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10"></div>
+        {/* Rewards */}
+        <div className="mb-20">
+          <h3 className="text-center text-4xl font-black text-white mb-10">
+            Rewards for Top Traders
+          </h3>
 
-          <div className="relative z-10">
-            <motion.h3
-              animate={{
-                opacity: [0.8, 1, 0.8],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-              }}
-              className="text-3xl font-extrabold text-white mb-4"
-            >
-              Looking for New Users
-            </motion.h3>
-
-            <p className="text-gray-300 mb-8 text-lg max-w-2xl mx-auto">
-              We are always looking for new users to join our
-              community and help us improve our products.
-            </p>
-
-            <motion.button
-              whileHover={{
-                scale: 1.08,
-                boxShadow:
-                  '0px 0px 30px rgba(34,211,238,0.5)',
-              }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl"
-            >
-              Get In Touch
-            </motion.button>
+          <div className="grid md:grid-cols-5 gap-5">
+            {rewards.map((reward) => (
+              <motion.div
+                key={reward.rank}
+                whileHover={{ scale: 1.05, y: -8 }}
+                className="bg-gradient-to-b from-yellow-500/10 to-transparent border border-yellow-500/20 rounded-3xl p-6 text-center backdrop-blur-xl"
+              >
+                <h4 className="text-yellow-400 font-bold text-xl mb-3">
+                  {reward.rank}
+                </h4>
+                <p className="text-white font-bold">{reward.reward}</p>
+              </motion.div>
+            ))}
           </div>
+        </div>
+
+        {/* CTA */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="text-center bg-gradient-to-r from-yellow-500/10 via-transparent to-cyan-500/10 border border-yellow-500/20 rounded-[40px] p-12 backdrop-blur-xl"
+        >
+          <DollarSign className="mx-auto text-yellow-400 mb-6" size={50} />
+          <h3 className="text-4xl font-black text-white mb-5">
+            Ready To Compete?
+          </h3>
+          <p className="text-slate-300 max-w-2xl mx-auto mb-8">
+            Join thousands of traders competing every 15 days for live-account
+            rewards and leaderboard recognition.
+          </p>
+          {/* <button className="px-10 py-5 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-black text-lg shadow-2xl">
+            Start Trading – Free Entry
+          </button> */}
         </motion.div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

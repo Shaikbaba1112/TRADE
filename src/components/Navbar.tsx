@@ -1,75 +1,74 @@
-import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { motion } from "framer-motion";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const navLinks = [
-    { name: 'About', href: '#about' },
-    { name: 'Experience', href: '#experience' },
-    { name: 'Products', href: '#projects' },
-    { name: 'Tech', href: '#skills' },
-    { name: 'Achievements', href: '#achievements' },
-    { name: 'Contact', href: '#contact' },
-  
-  ];
-
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className="fixed w-full bg-slate-950/95 backdrop-blur-md z-50 border-b border-slate-800"
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <a href="#" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            E-MART
-          </a>
+    <div className="fixed top-0 left-0 w-full z-50 overflow-hidden bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 shadow-[0_0_30px_rgba(250,204,21,0.5)] border-b border-yellow-300">
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-gray-300 hover:text-blue-400 transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
+      {/* Shine Effect */}
+      <motion.div
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12"
+      />
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-gray-300"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+      {/* Floating Bitcoin */}
+      <motion.div
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute left-5 top-2 text-2xl"
+      >
+        ₿
+      </motion.div>
 
-        {/* Mobile Menu */}
-        {isOpen && (
+      <motion.div
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity }}
+        className="absolute right-5 top-2 text-2xl"
+      >
+        ₿
+      </motion.div>
+
+      <div className="flex items-center justify-center gap-4 py-3 relative z-10">
+
+        {/* LIVE Badge */}
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            boxShadow: [
+              "0 0 10px #ef4444",
+              "0 0 25px #ef4444",
+              "0 0 10px #ef4444",
+            ],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+          }}
+          className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold"
+        >
+          LIVE
+        </motion.div>
+
+        {/* Scrolling Text */}
+        <div className="overflow-hidden w-full">
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:hidden pb-4 space-y-2"
+            animate={{ x: ["100%", "-100%"] }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="whitespace-nowrap font-extrabold text-black text-lg tracking-wide"
           >
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="block text-gray-300 hover:text-blue-400 transition-colors py-2"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </a>
-            ))}
+            🚀 NO REAL MONEY REQUIRED • 💰 NO DEPOSIT NEEDED • ⚡ INSTANT MT5 ACCESS • 🏆 WIN UP TO $2,000 • 🚀
           </motion.div>
-        )}
+        </div>
       </div>
-    </motion.nav>
+    </div>
   );
 };
 

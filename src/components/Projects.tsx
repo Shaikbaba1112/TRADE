@@ -1,161 +1,220 @@
-import { motion } from 'framer-motion';
-import { ExternalLink, Code2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, Trophy } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 const Projects = () => {
+  // ---------- Bitcoin hover effect ----------
+  const [coins, setCoins] = useState([]);
+  const coinId = useRef(0);
+  const sectionRef = useRef(null);
+  const throttleRef = useRef(false);
+
+  const addCoin = useCallback((e) => {
+    if (throttleRef.current) return;
+    throttleRef.current = true;
+    requestAnimationFrame(() => {
+      throttleRef.current = false;
+    });
+
+    const rect = sectionRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = coinId.current++;
+
+    setCoins((prev) => [...prev, { id, x, y }]);
+
+    setTimeout(() => {
+      setCoins((prev) => prev.filter((c) => c.id !== id));
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      coinId.current = 0;
+    };
+  }, []);
+  // ----------------------------------------
+
+  // ---------- Trading Contest Data ----------
   const featuredProjects = [
     {
-      title: 'Premium Smartwatches',
+      title: '15-Day Trading Challenge',
       image:
-        'https://images.unsplash.com/photo-1666238854780-d6c19c5c119e?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fFByZW1pdW0lMjBTbWFydHdhdGNoZXN8ZW58MHx8MHx8fDA%3D',
+        'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1000&auto=format&fit=crop&q=60',
       description:
-        'A cutting-edge smartwatch with advanced health monitoring and seamless integration with mobile devices',
+        'Compete with traders worldwide using a $10,000 demo account on real MT5 market conditions. Rankings reset every 15 days.',
       problem:
-        'Existing smartwatches lack comprehensive health tracking and intuitive user interfaces.',
-      role: 'Features',
+        'Traders lack a risk-free environment to test skills, earn real rewards, and benchmark themselves against peers.',
+      role: 'How It Works',
       details:
-        'A feature-rich smartwatch that provides real-time health insights, fitness tracking, and seamless connectivity with smartphones.',
+        'Trade forex, metals, and commodities. Complete at least 10 trades. Accounts exceeding 60% drawdown are disqualified.',
       technologies: [
-        'Health Monitoring',
-        'Fitness Tracking',
-        'Mobile Integration',
-        'User Interface Design',
-        'Wearable Technology',
+        '$10,000 Demo',
+        'MT5 Platform',
+        '1:100 Leverage',
+        'FX • Metals',
+        'Live Leaderboard',
+        'Weekly Prizes',
       ],
       tags: [
-        'Smartwatch',
-        'Health Tech',
-        'Wearable',
-        'Fitness',
-        'Mobile Integration',
+        'Trading',
+        'Forex',
+        'Competition',
+        'Demo Account',
+        'Prizes',
       ],
-      links: { live: '#', github: '#' },
+      links: { live: '#register', github: '#rules' },
     },
-
     {
-      title: 'Compact Smart Home Appliances',
+      title: 'Weekly Prize Pool',
       image:
-        'https://plus.unsplash.com/premium_photo-1688686804638-fadb460edc4a?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c21hcnQlMjBob21lfGVufDB8fDB8fHww',
+        'https://images.unsplash.com/photo-1628151015968-3a4429e9ef04?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Yml0Y29pbnxlbnwwfHwwfHx8MA%3D%3D',
       description:
-        'A line of compact smart home appliances designed for small living spaces, offering convenience and energy efficiency.',
+        'Top 20 traders win cash, credits, or deposit bonuses every week. Your performance directly decides your reward.',
       problem:
-        'Many smart home appliances are bulky and not suitable for small apartments or homes.',
-      role: 'Features',
+        'Most contests have low rewards and high barriers. We offer real cash prizes with no entry fee.',
+      role: 'Prizes',
       details:
-        'A range of space-saving smart appliances that provide convenience and energy efficiency for small living spaces.',
+        '1st: $2,000 | 2nd: $1,000 | 3rd: $500 | 4th-10th: $200 Credit | 11th-20th: 30% Deposit Bonus.',
       technologies: [
-        'IoT',
-        'Energy Efficiency',
-        'Space-Saving Design',
-        'Automation',
-        'Smart Home Integration',
+        'Cash Prizes',
+        'Credit Bonuses',
+        'Deposit Bonuses',
+        'Weekly Payouts',
       ],
       tags: [
-        'Smart Home',
-        'IoT',
-        'Energy Efficiency',
-        'Space-Saving',
-        'Automation',
+        'Prizes',
+        'Cash',
+        'Bonus',
+        'Weekly',
       ],
-      links: { live: '#', github: '#' },
+      links: { live: '#prizes', github: '#terms' },
     },
-
     {
-      title: 'AI-Powered Wireless Earbuds',
+      title: 'Live Leaderboard',
       image:
-        'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46',
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1000&auto=format&fit=crop&q=60',
       description:
-        'Next-generation wireless earbuds with AI noise cancellation, immersive audio quality, and ultra-long battery performance.',
+        'Track your rank in real time. See profit, number of trades, and drawdown status — total transparency.',
       problem:
-        'Traditional earbuds often suffer from poor battery life, unstable connectivity, and ineffective noise cancellation in crowded environments.',
+        'Opaque scoring and delays in results ruin the competition spirit.',
       role: 'Features',
       details:
-        'Smart AI-powered earbuds designed for crystal-clear calls, adaptive sound control, low-latency gaming mode, and all-day comfort for music lovers and professionals.',
+        'Real-time updates, minimum 10 trades to qualify, automatic removal if drawdown exceeds 60%.',
       technologies: [
-        'AI Noise Cancellation',
-        'Bluetooth 5.3',
-        'Spatial Audio',
-        'Fast Charging',
-        'Voice Assistant Integration',
+        'Real-time',
+        'Rankings',
+        'Trades',
+        'Drawdown Protection',
       ],
       tags: [
-        'Wireless Earbuds',
-        'AI Audio',
-        'Bluetooth',
-        'Gaming',
-        'Music Tech',
+        'Leaderboard',
+        'Ranking',
+        'Transparency',
       ],
-      links: { live: '#', github: '#' },
+      links: { live: '#leaderboard', github: '#' },
     },
-
     {
-      title: 'Portable Gaming Laptop',
+      title: 'How to Participate',
       image:
-        'https://plus.unsplash.com/premium_photo-1723525545936-84718e4871cc?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8UG9ydGFibGUlMjBHYW1pbmclMjBMYXB0b3B8ZW58MHx8MHx8fDA%3D',
+        'https://plus.unsplash.com/premium_photo-1664476845274-27c2dabdd7f0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8dHJhZGluZ3xlbnwwfHwwfHx8MA%3D%3D',
       description:
-        'High-performance portable gaming laptop built for esports, content creation, and ultra-fast multitasking.',
+        'Simple registration, no deposit required. Start trading with your demo account and climb the leaderboard.',
       problem:
-        'Many gaming laptops are bulky, overheat quickly, and offer poor battery optimization for users on the move.',
-      role: 'Features',
+        'Complex registration processes discourage talented traders from joining.',
+      role: 'Steps',
       details:
-        'A lightweight gaming laptop featuring powerful graphics, advanced cooling systems, high refresh-rate display, and AI-enhanced performance optimization.',
+        '1. Register with email. 2. Receive $10k demo. 3. Trade for 15 days. 4. Check rankings. 5. Win prizes.',
       technologies: [
-        'RTX Graphics',
-        'AI Performance Boost',
-        'Liquid Cooling',
-        '144Hz Display',
-        'Fast SSD Storage',
+        'Free Registration',
+        'Demo Account',
+        '15 Days',
+        'No Deposit',
       ],
       tags: [
-        'Gaming Laptop',
-        'Esports',
-        'Performance',
-        'Portable',
-        'AI Computing',
+        'How to Join',
+        'Free',
+        'Easy',
       ],
-      links: { live: '#', github: '#' },
+      links: { live: '#register', github: '#' },
     },
   ];
 
   const moreProjects = [
     {
-      title: 'Next-Gen Smart TVs',
-      desc: 'Innovative smart TV with enhanced features',
-      tags: ['Smart TV', 'Innovation', 'Entertainment'],
+      title: 'Competition Rules',
+      desc: 'Understand drawdown limits, trade requirements, and disqualification criteria.',
+      tags: ['Rules', 'Drawdown', 'Eligibility'],
     },
-
     {
-      title: 'New Smartphones',
-      desc: 'Latest generation of smartphones with cutting-edge technology',
-      tags: ['Smartphone', 'Technology', 'Innovation'],
+      title: 'Prize Breakdown',
+      desc: 'Full details on cash prizes, credit bonuses, and how they are credited.',
+      tags: ['Prizes', 'Cash', 'Bonus'],
     },
-
     {
-      title: 'Remote Control for Smart Home Devices',
-      desc: 'Intuitive remote control for managing smart home devices',
-      tags: ['Smart Home', 'IoT', 'Automation'],
+      title: 'MT5 Platform Guide',
+      desc: 'Learn how to use MetaTrader 5 for demo trading – tips and tutorials.',
+      tags: ['Platform', 'MT5', 'Guide'],
     },
-
     {
-      title: 'Smart Expense Tracker',
-      desc: 'Smart expense tracking with AI-powered categorization',
-      tags: ['Finance', 'AI', 'Productivity'],
+      title: 'Past Winners',
+      desc: 'See success stories and results from previous competition rounds.',
+      tags: ['Winners', 'Testimonials', 'Results'],
     },
   ];
 
   return (
     <motion.section
       id="projects"
+      ref={sectionRef}
+      onMouseMove={addCoin}
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      className="relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-slate-900 to-black"
+      className="relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black via-[#0a0a0a] to-black"
     >
-      {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1575089976121-8ed7b2a54265?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDZ8fHxlbnwwfHx8fHw%3D')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15,
+        }}
+      />
+
+      {/* Background Glow – gold accents */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse"></div>
 
       {/* Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+
+      {/* Bitcoin particles */}
+      <AnimatePresence>
+        {coins.map((coin) => (
+          <motion.span
+            key={coin.id}
+            initial={{ opacity: 1, scale: 0, rotate: 0 }}
+            animate={{ opacity: 0, scale: 1.5, rotate: 360, y: -30 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              left: coin.x,
+              top: coin.y,
+              fontSize: '24px',
+              color: '#F59E0B',
+              pointerEvents: 'none',
+              zIndex: 100,
+              textShadow: '0 0 15px rgba(245,158,11,0.9)',
+            }}
+          >
+            ₿
+          </motion.span>
+        ))}
+      </AnimatePresence>
 
       <div className="relative max-w-7xl mx-auto z-10">
         {/* Heading */}
@@ -166,9 +225,9 @@ const Projects = () => {
           viewport={{ once: true }}
           className="text-5xl sm:text-6xl font-extrabold text-white mb-4"
         >
-          E-MART{' '}
-          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Product Previews
+          TRADING{' '}
+          <span className="bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+            CONTEST
           </span>
         </motion.h2>
 
@@ -176,10 +235,10 @@ const Projects = () => {
           initial={{ width: 0 }}
           whileInView={{ width: '120px' }}
           transition={{ duration: 1 }}
-          className="h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-16"
+          className="h-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded mb-16"
         ></motion.div>
 
-        {/* Featured Products */}
+        {/* Featured Contest Highlights */}
         <div className="space-y-16 mb-20">
           {featuredProjects.map((project, index) => (
             <motion.div
@@ -191,22 +250,22 @@ const Projects = () => {
               whileHover={{
                 scale: 1.01,
               }}
-              className="relative overflow-hidden grid md:grid-cols-2 gap-10 items-center bg-slate-800/30 backdrop-blur-xl border border-slate-700 rounded-3xl p-8 group"
+              className="relative overflow-hidden grid md:grid-cols-2 gap-10 items-center bg-black/40 backdrop-blur-xl border border-yellow-800/30 rounded-3xl p-8 group"
             >
               {/* Hover Glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-700"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition duration-700"></div>
 
               {/* Floating Glow */}
-              <div className="absolute -top-16 -right-16 w-52 h-52 bg-cyan-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute -top-16 -right-16 w-52 h-52 bg-amber-500/10 rounded-full blur-3xl"></div>
 
-              {/* Product Image */}
+              {/* Image */}
               <motion.div
                 whileHover={{
                   scale: 1.03,
                   rotate: 1,
                 }}
                 transition={{ duration: 0.4 }}
-                className="relative overflow-hidden rounded-3xl border border-slate-700 shadow-2xl"
+                className="relative overflow-hidden rounded-3xl border border-yellow-800/20 shadow-2xl"
               >
                 <motion.img
                   src={project.image}
@@ -218,10 +277,8 @@ const Projects = () => {
                   transition={{ duration: 0.6 }}
                 />
 
-                {/* Image Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
 
-                {/* Floating Badge */}
                 <motion.div
                   animate={{
                     y: [0, -6, 0],
@@ -230,9 +287,9 @@ const Projects = () => {
                     duration: 3,
                     repeat: Infinity,
                   }}
-                  className="absolute top-5 left-5 px-4 py-2 bg-cyan-400/20 backdrop-blur-xl border border-cyan-400/30 text-cyan-300 rounded-full text-sm font-semibold"
+                  className="absolute top-5 left-5 px-4 py-2 bg-yellow-500/20 backdrop-blur-xl border border-yellow-500/30 text-yellow-300 rounded-full text-sm font-semibold"
                 >
-                  Trending Product
+                  Live Contest
                 </motion.div>
               </motion.div>
 
@@ -248,13 +305,13 @@ const Projects = () => {
 
                   <motion.span
                     whileHover={{ scale: 1.08 }}
-                    className="px-3 py-1 bg-blue-500/20 border border-cyan-400/30 text-cyan-300 rounded-full text-xs font-semibold"
+                    className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 rounded-full text-xs font-semibold"
                   >
                     Featured
                   </motion.span>
                 </div>
 
-                <p className="text-gray-400 text-lg leading-relaxed mb-5">
+                <p className="text-gray-300 text-lg leading-relaxed mb-5">
                   {project.description}
                 </p>
 
@@ -263,12 +320,10 @@ const Projects = () => {
                   whileHover={{
                     scale: 1.02,
                   }}
-                  className="bg-slate-900/40 border border-slate-700 rounded-2xl p-5 mb-5"
+                  className="bg-yellow-900/20 border border-yellow-800/30 rounded-2xl p-5 mb-5"
                 >
-                  <p className="text-gray-300 leading-relaxed">
-                    <strong className="text-cyan-400">
-                      Problem Solved:
-                    </strong>{' '}
+                  <p className="text-gray-200 leading-relaxed">
+                    <strong className="text-yellow-400">Problem Solved:</strong>{' '}
                     {project.problem}
                   </p>
                 </motion.div>
@@ -285,12 +340,12 @@ const Projects = () => {
                     duration: 3,
                     repeat: Infinity,
                   }}
-                  className="text-cyan-400 font-bold mb-5"
+                  className="text-yellow-400 font-bold mb-5"
                 >
-                  My Role: {project.role}
+                  Your Role: {project.role}
                 </motion.p>
 
-                {/* Technologies */}
+                {/* Contest Features */}
                 <div className="flex flex-wrap gap-3 mb-5">
                   {project.technologies.map((tech, i) => (
                     <motion.span
@@ -302,7 +357,7 @@ const Projects = () => {
                         scale: 1.1,
                         y: -3,
                       }}
-                      className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm shadow-lg cursor-pointer"
+                      className="px-4 py-2 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-full text-sm shadow-lg cursor-pointer"
                     >
                       {tech}
                     </motion.span>
@@ -317,7 +372,7 @@ const Projects = () => {
                       whileHover={{
                         scale: 1.08,
                       }}
-                      className="text-sm text-gray-400 hover:text-cyan-300 transition"
+                      className="text-sm text-gray-400 hover:text-yellow-300 transition"
                     >
                       #{tag}
                     </motion.span>
@@ -330,27 +385,25 @@ const Projects = () => {
                     href={project.links.live}
                     whileHover={{
                       scale: 1.08,
-                      boxShadow:
-                        '0px 0px 25px rgba(34,211,238,0.5)',
+                      boxShadow: '0px 0px 25px rgba(245,158,11,0.5)',
                     }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-xl"
+                    className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black px-6 py-3 rounded-2xl font-semibold shadow-xl"
                   >
                     <ExternalLink size={18} />
-                    Buy Now
-                  </motion.a>
+                                      </motion.a>
 
                   <motion.a
                     href={project.links.github}
                     whileHover={{
                       scale: 1.08,
-                      borderColor: '#22d3ee',
+                      borderColor: '#f59e0b',
                     }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-2 border border-cyan-400 text-cyan-300 hover:bg-cyan-400/10 px-6 py-3 rounded-2xl font-semibold backdrop-blur-sm"
+                    className="flex items-center gap-2 border border-yellow-500 text-yellow-300 hover:bg-yellow-500/10 px-6 py-3 rounded-2xl font-semibold backdrop-blur-sm"
                   >
-                    <Code2 size={18} />
-                    Add to Cart
+                    <Trophy size={18} />
+                    View Prizes
                   </motion.a>
                 </div>
               </div>
@@ -358,7 +411,7 @@ const Projects = () => {
           ))}
         </div>
 
-        {/* More Products */}
+        {/* More Contest Info */}
         <motion.div
           initial={{ y: 40, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -366,7 +419,7 @@ const Projects = () => {
           viewport={{ once: true }}
         >
           <h3 className="text-3xl font-extrabold text-white mb-10">
-            More Products
+            More Contest Details
           </h3>
 
           <div className="grid md:grid-cols-2 gap-8 mb-16">
@@ -379,13 +432,11 @@ const Projects = () => {
                 whileHover={{
                   y: -10,
                   scale: 1.03,
-                  boxShadow:
-                    '0px 0px 30px rgba(59,130,246,0.2)',
+                  boxShadow: '0px 0px 30px rgba(245,158,11,0.2)',
                 }}
-                className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-7 group"
+                className="relative overflow-hidden bg-black/50 backdrop-blur-xl border border-yellow-800/30 rounded-3xl p-7 group"
               >
-                {/* Hover Glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-amber-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
 
                 <div className="relative z-10">
                   <h4 className="text-2xl font-bold text-white mb-3">
@@ -403,7 +454,7 @@ const Projects = () => {
                         whileHover={{
                           scale: 1.08,
                         }}
-                        className="px-3 py-1 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-xs"
+                        className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-full text-xs"
                       >
                         {tag}
                       </motion.span>
@@ -423,13 +474,11 @@ const Projects = () => {
           viewport={{ once: true }}
           whileHover={{
             scale: 1.02,
-            boxShadow:
-              '0px 0px 40px rgba(34,211,238,0.2)',
+            boxShadow: '0px 0px 40px rgba(245,158,11,0.3)',
           }}
-          className="relative overflow-hidden bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-12 text-center backdrop-blur-xl"
+          className="relative overflow-hidden bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-yellow-500/10 border border-yellow-500/30 rounded-3xl p-12 text-center backdrop-blur-xl"
         >
-          {/* Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-amber-500/10"></div>
 
           <div className="relative z-10">
             <motion.h3
@@ -442,25 +491,24 @@ const Projects = () => {
               }}
               className="text-4xl font-extrabold text-white mb-4"
             >
-              Interested in E-MART
+              Ready to Compete?
             </motion.h3>
 
             <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-              Explore our latest products and discover how we can help
-              you achieve your goals.
+              Join thousands of traders in the TD Trading Contest. Risk‑free demo,
+              real prizes, and global leaderboard – completely free.
             </p>
 
             <motion.a
-              href="#contact"
+              href="#register"
               whileHover={{
                 scale: 1.08,
-                boxShadow:
-                  '0px 0px 30px rgba(34,211,238,0.5)',
+                boxShadow: '0px 0px 30px rgba(245,158,11,0.5)',
               }}
               whileTap={{ scale: 0.95 }}
-              className="inline-block mt-8 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-10 py-4 rounded-2xl font-bold shadow-2xl"
+              className="inline-block mt-8 bg-gradient-to-r from-yellow-500 to-amber-500 text-black px-10 py-4 rounded-2xl font-bold shadow-2xl"
             >
-              Let's Connect
+              connect
             </motion.a>
           </div>
         </motion.div>

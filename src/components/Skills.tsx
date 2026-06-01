@@ -1,400 +1,176 @@
-import { motion } from 'framer-motion';
-import {
-  ShoppingCart,
-  Laptop,
-  Smartphone,
-  Headphones,
-  Cpu,
-} from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, Clock, DollarSign, BarChart3 } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 const Skills = () => {
-  const skillCategories = [
+  // ---------- Bitcoin hover effect ----------
+  const [coins, setCoins] = useState([]);
+  const coinId = useRef(0);
+  const sectionRef = useRef(null);
+  const throttleRef = useRef(false);
+
+  const addCoin = useCallback((e) => {
+    if (throttleRef.current) return;
+    throttleRef.current = true;
+    requestAnimationFrame(() => {
+      throttleRef.current = false;
+    });
+
+    const rect = sectionRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const id = coinId.current++;
+
+    setCoins((prev) => [...prev, { id, x, y }]);
+
+    setTimeout(() => {
+      setCoins((prev) => prev.filter((c) => c.id !== id));
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      coinId.current = 0;
+    };
+  }, []);
+  // ----------------------------------------
+
+  const cards = [
     {
-      category: 'Smart Electronics',
-      subtitle: 'Latest premium gadgets & devices',
-      icon: Smartphone,
-      image:
-        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1200&auto=format&fit=crop',
-      skills: [
-        'Smartphones',
-        'Laptops',
-        'Gaming Consoles',
-        'Smart Watches',
-        'Premium Accessories',
-      ],
+      title: "15-Day Challenge",
+      icon: Clock,
+      desc: "Trade with a $10,000 demo account on MT5.",
     },
-
     {
-      category: 'Modern Technology',
-      subtitle: 'Future-ready electronic innovations',
-      icon: Cpu,
-      image:
-        'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
-      skills: [
-        'AI Devices',
-        'IoT Products',
-        'Smart Home',
-        'Automation',
-        'Energy Efficient Tech',
-      ],
+      title: "Prize Pool",
+      icon: DollarSign,
+      desc: "Win up to $2,000 in cash rewards.",
     },
-
     {
-      category: 'Audio & Entertainment',
-      subtitle: 'Immersive entertainment experience',
-      icon: Headphones,
-      image:
-        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200&auto=format&fit=crop',
-      skills: [
-        'Headphones',
-        'Speakers',
-        'Gaming Audio',
-        'Music Systems',
-        'Wireless Audio',
-      ],
+      title: "Live Leaderboard",
+      icon: BarChart3,
+      desc: "Track rankings in real-time.",
     },
-
     {
-      category: 'Gaming & Performance',
-      subtitle: 'High performance gaming products',
-      icon: Laptop,
-      image:
-        'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
-      skills: [
-        'Gaming PCs',
-        'RTX Graphics',
-        'Mechanical Keyboards',
-        'Streaming Gear',
-        'Ultra Performance',
-      ],
+      title: "Top Rewards",
+      icon: Trophy,
+      desc: "Cash prizes, bonuses, and credits.",
     },
-  ];
-
-  const tools = [
-    'Smart Product Display',
-    'Fast Delivery',
-    '24/7 Support',
-    'Secure Payments',
-    'Premium Brands',
-    'Latest Gadgets',
-  ];
-
-  const webTech = [
-    'AI Recommendations',
-    'Smart Shopping',
-    'Secure Checkout',
-    'Cloud Integration',
-    'Mobile Experience',
-    'Fast Performance',
-  ];
-
-  const learning = [
-    'Latest Electronics',
-    'Future Gadgets',
-    'AI Technology',
-    'Gaming Innovations',
-    'Smart Devices',
-    'Luxury Accessories',
   ];
 
   return (
-    <motion.section
+    <section
       id="skills"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-slate-900 to-black"
+      ref={sectionRef}
+      onMouseMove={addCoin}
+      className="relative py-24 px-6 bg-black overflow-hidden"
     >
-      {/* Animated Background Glow */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1631384916671-3d4be55a8c92?q=80&w=1212&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15,
+        }}
+      />
 
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+      {/* Bitcoin particles */}
+      <AnimatePresence>
+        {coins.map((coin) => (
+          <motion.span
+            key={coin.id}
+            initial={{ opacity: 1, scale: 0, rotate: 0 }}
+            animate={{ opacity: 0, scale: 1.5, rotate: 360, y: -30 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: coin.x,
+              top: coin.y,
+              fontSize: "24px",
+              color: "#F59E0B",
+              pointerEvents: "none",
+              zIndex: 100,
+              textShadow: "0 0 15px rgba(245,158,11,0.9)",
+            }}
+          >
+            ₿
+          </motion.span>
+        ))}
+      </AnimatePresence>
 
-      {/* Floating Particles */}
-      <div className="absolute top-20 left-20 w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
+      {/* Background Glow */}
+      <div className="absolute top-0 left-0 w-80 h-80 bg-yellow-500/20 blur-[120px] rounded-full" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-orange-500/20 blur-[120px] rounded-full" />
 
-      <div className="absolute bottom-40 right-40 w-4 h-4 bg-blue-400 rounded-full animate-bounce"></div>
-
-      {/* Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-
-      <div className="relative max-w-7xl mx-auto z-10">
+      <div className="relative max-w-6xl mx-auto">
         {/* Heading */}
-        <motion.h2
-          initial={{ y: 40, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          className="text-5xl sm:text-6xl font-extrabold text-white mb-4"
-        >
-          Smart Tech &
-          <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            {' '}
-            E-MART Products
-          </span>
-        </motion.h2>
-
         <motion.div
-          initial={{ width: 0 }}
-          whileInView={{ width: '140px' }}
-          transition={{ duration: 1 }}
-          className="h-1 bg-gradient-to-r from-blue-400 to-cyan-400 rounded mb-16"
-        ></motion.div>
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-5xl font-black text-white">
+            SMART 
+            <span className="block text-yellow-400">
+              TRADING
+            </span>
+          </h2>
 
-        {/* Main Cards */}
-        <div className="grid md:grid-cols-2 gap-8 mb-20">
-          {skillCategories.map((category, index) => (
+          <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
+            Trade risk-free, compete globally, and win real rewards.
+          </p>
+        </motion.div>
+
+        {/* Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {cards.map((card, index) => (
             <motion.div
-              key={category.category}
-              initial={{ y: 60, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.7, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              key={card.title}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
               whileHover={{
-                y: -12,
-                scale: 1.03,
-                boxShadow:
-                  '0px 0px 40px rgba(34,211,238,0.25)',
+                y: -10,
+                scale: 1.05,
               }}
-              className="relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl shadow-2xl group"
+              className="bg-white/5 border border-yellow-500/20 backdrop-blur-xl rounded-3xl p-6 text-center group"
             >
-              {/* Background Image */}
-              <div className="relative h-60 overflow-hidden">
-                <motion.img
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.8 }}
-                  src={category.image}
-                  alt={category.category}
-                  className="w-full h-full object-cover"
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
+                <card.icon
+                  size={32}
+                  className="text-yellow-400"
                 />
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-
-                {/* Floating Icon */}
-                <motion.div
-                  animate={{
-                    y: [0, -10, 0],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                  }}
-                  className="absolute top-5 right-5 bg-cyan-400/20 border border-cyan-300/30 backdrop-blur-xl p-4 rounded-2xl"
-                >
-                  <category.icon
-                    className="text-cyan-300"
-                    size={34}
-                  />
-                </motion.div>
-
-                {/* Text */}
-                <div className="absolute bottom-6 left-6">
-                  <h3 className="text-3xl font-black text-white mb-2">
-                    {category.category}
-                  </h3>
-
-                  <p className="text-cyan-300 text-sm">
-                    {category.subtitle}
-                  </p>
-                </div>
               </div>
 
-              {/* Content */}
-              <div className="p-6">
-                <div className="flex flex-wrap gap-3">
-                  {category.skills.map((skill, i) => (
-                    <motion.span
-                      key={skill}
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      transition={{ delay: i * 0.05 }}
-                      whileHover={{
-                        scale: 1.1,
-                        y: -4,
-                        boxShadow:
-                          '0px 0px 20px rgba(34,211,238,0.4)',
-                      }}
-                      className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm cursor-pointer"
-                    >
-                      {skill}
-                    </motion.span>
-                  ))}
-                </div>
-              </div>
+              <h3 className="text-xl font-bold text-white mb-3">
+                {card.title}
+              </h3>
 
-              {/* Glow */}
-              <div className="absolute -bottom-16 -right-16 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+              <p className="text-gray-400 text-sm">
+                {card.desc}
+              </p>
             </motion.div>
           ))}
         </div>
 
-        {/* Featured Products */}
+        {/* CTA */}
         <motion.div
-          initial={{ y: 60, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          whileHover={{
-            scale: 1.01,
-            boxShadow: '0px 0px 35px rgba(34,211,238,0.2)',
-          }}
-          className="relative overflow-hidden bg-slate-800/40 backdrop-blur-xl border border-slate-700 rounded-3xl p-10 mb-12"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="text-center mt-16"
         >
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <img
-              src="https://plus.unsplash.com/premium_photo-1728619312315-eb5c96dc8c70?q=80&w=1200&auto=format&fit=crop"
-              alt="E-MART"
-              className="w-full h-full object-cover opacity-20"
-            />
-
-            <div className="absolute inset-0 bg-black/70"></div>
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-3">
-              <motion.div
-                animate={{
-                  rotate: [0, 10, -10, 0],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                }}
-              >
-                <ShoppingCart className="text-cyan-400 w-8 h-8" />
-              </motion.div>
-
-              <h3 className="text-3xl font-extrabold text-white">
-                Featured Electronics
-              </h3>
-            </div>
-
-            <p className="text-gray-300 text-sm mb-8 max-w-2xl">
-              Explore futuristic gadgets, smart devices and
-              premium electronics designed for the next generation.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              {tools.map((tool, i) => (
-                <motion.span
-                  key={tool}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  whileHover={{
-                    scale: 1.08,
-                    y: -2,
-                  }}
-                  className="px-4 py-2 bg-slate-700/40 border border-slate-600 text-gray-300 rounded-full text-sm cursor-pointer hover:border-cyan-400/50 hover:text-cyan-300 transition-all duration-300"
-                >
-                  {tool}
-                </motion.span>
-              ))}
-            </div>
-          </div>
+          {/* <a
+            href="#register"
+            className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold shadow-lg hover:scale-105 transition"
+          >
+            Join Now 🚀
+          </a> */}
         </motion.div>
-
-        {/* Bottom Cards */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Technology Card */}
-          <motion.div
-            initial={{ x: -40, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            whileHover={{
-              y: -8,
-              scale: 1.02,
-            }}
-            className="relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-800/40 backdrop-blur-xl"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1200&auto=format&fit=crop"
-              alt="technology"
-              className="w-full h-60 object-cover"
-            />
-
-            <div className="p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">
-                E-MART Technology
-              </h3>
-
-              <div className="flex flex-wrap gap-3">
-                {webTech.map((tech, i) => (
-                  <motion.span
-                    key={tech}
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileHover={{
-                      scale: 1.08,
-                    }}
-                    className="px-3 py-2 bg-slate-700/40 border border-slate-600 text-gray-300 rounded-xl text-sm hover:border-cyan-400/50 hover:text-cyan-300"
-                  >
-                    {tech}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Trending Products */}
-          <motion.div
-            initial={{ x: 40, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            whileHover={{
-              scale: 1.02,
-              boxShadow:
-                '0px 0px 30px rgba(34,211,238,0.2)',
-            }}
-            className="relative overflow-hidden rounded-3xl border border-cyan-400/30 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-xl"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop"
-              alt="gaming"
-              className="w-full h-60 object-cover opacity-80"
-            />
-
-            <div className="p-8">
-              <motion.h3
-                animate={{
-                  opacity: [0.8, 1, 0.8],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                }}
-                className="text-2xl font-extrabold text-white mb-4"
-              >
-                Trending Products
-              </motion.h3>
-
-              <div className="flex flex-wrap gap-3">
-                {learning.map((tech, i) => (
-                  <motion.span
-                    key={tech}
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileHover={{
-                      scale: 1.08,
-                      y: -3,
-                    }}
-                    className="px-4 py-2 bg-blue-500/10 border border-cyan-400/30 text-cyan-300 rounded-full text-sm backdrop-blur-sm"
-                  >
-                    {tech} ✨
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

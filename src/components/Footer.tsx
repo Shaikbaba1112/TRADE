@@ -11,7 +11,7 @@ const Footer = () => {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      className="relative overflow-hidden bg-slate-950 border-t border-slate-800 px-4 sm:px-6 lg:px-8 py-12"
+      className="relative overflow-hidden bg-black border-t border-yellow-800/30 px-4 sm:px-6 lg:px-8 py-12"
     >
       {/* Animated Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
@@ -25,7 +25,7 @@ const Footer = () => {
             repeat: Infinity,
             ease: 'easeInOut',
           }}
-          className="absolute top-10 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"
+          className="absolute top-10 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl"
         />
 
         <motion.div
@@ -38,7 +38,7 @@ const Footer = () => {
             repeat: Infinity,
             ease: 'easeInOut',
           }}
-          className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"
+          className="absolute bottom-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"
         />
 
         {/* Floating Stars */}
@@ -53,7 +53,7 @@ const Footer = () => {
               duration: 3 + i,
               repeat: Infinity,
             }}
-            className="absolute w-1.5 h-1.5 bg-blue-400 rounded-full"
+            className="absolute w-1.5 h-1.5 bg-yellow-400 rounded-full"
             style={{
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
@@ -71,14 +71,14 @@ const Footer = () => {
             viewport={{ once: true }}
             whileHover={{ y: -8 }}
             transition={{ duration: 0.4 }}
-            className="bg-slate-900/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.25)]"
+            className="bg-black/40 backdrop-blur-xl border border-yellow-800/30 rounded-2xl p-6 hover:border-yellow-400/40 hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]"
           >
             <motion.h3
               animate={{
                 textShadow: [
-                  '0px 0px 5px rgba(96,165,250,0.4)',
-                  '0px 0px 20px rgba(96,165,250,0.9)',
-                  '0px 0px 5px rgba(96,165,250,0.4)',
+                  '0px 0px 5px rgba(245,158,11,0.4)',
+                  '0px 0px 20px rgba(245,158,11,0.9)',
+                  '0px 0px 5px rgba(245,158,11,0.4)',
                 ],
               }}
               transition={{
@@ -103,7 +103,7 @@ const Footer = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
             whileHover={{ y: -8 }}
-            className="bg-slate-900/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-cyan-400/40 hover:shadow-[0_0_30px_rgba(34,211,238,0.25)]"
+            className="bg-black/40 backdrop-blur-xl border border-yellow-800/30 rounded-2xl p-6 hover:border-yellow-400/40 hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]"
           >
             <h4 className="text-white font-semibold mb-4 text-lg">
               Quick Links
@@ -127,9 +127,9 @@ const Footer = () => {
                   <motion.a
                     href={`#${link.toLowerCase()}`}
                     whileHover={{ x: 8 }}
-                    className="text-gray-400 hover:text-blue-400 transition-all duration-300 text-sm flex items-center gap-2 group"
+                    className="text-gray-400 hover:text-yellow-400 transition-all duration-300 text-sm flex items-center gap-2 group"
                   >
-                    <span className="w-0 group-hover:w-3 h-[2px] bg-blue-400 transition-all duration-300"></span>
+                    <span className="w-0 group-hover:w-3 h-[2px] bg-yellow-400 transition-all duration-300"></span>
                     {link}
                   </motion.a>
                 </motion.li>
@@ -144,7 +144,7 @@ const Footer = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
             whileHover={{ y: -8 }}
-            className="bg-slate-900/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-purple-400/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]"
+            className="bg-black/40 backdrop-blur-xl border border-yellow-800/30 rounded-2xl p-6 hover:border-yellow-400/40 hover:shadow-[0_0_30px_rgba(245,158,11,0.25)]"
           >
             <h4 className="text-white font-semibold mb-4 text-lg">
               Connect With Me
@@ -161,9 +161,9 @@ const Footer = () => {
                   y: -5,
                 }}
                 whileTap={{ scale: 0.9 }}
-                className="relative w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-gray-300 hover:text-white overflow-hidden group"
+                className="relative w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-gray-300 hover:text-black overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <Code2 size={22} className="relative z-10" />
               </motion.a>
 
@@ -177,9 +177,9 @@ const Footer = () => {
                   y: -5,
                 }}
                 whileTap={{ scale: 0.9 }}
-                className="relative w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-gray-300 hover:text-white overflow-hidden group"
+                className="relative w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-gray-300 hover:text-black overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <User size={22} className="relative z-10" />
               </motion.a>
 
@@ -191,9 +191,9 @@ const Footer = () => {
                   y: -5,
                 }}
                 whileTap={{ scale: 0.9 }}
-                className="relative w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-gray-300 hover:text-white overflow-hidden group"
+                className="relative w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-gray-300 hover:text-black overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <Mail size={22} className="relative z-10" />
               </motion.a>
             </div>
@@ -210,7 +210,7 @@ const Footer = () => {
             repeat: Infinity,
             repeatType: 'reverse',
           }}
-          className="h-[2px] rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent bg-[length:200%_200%] my-8"
+          className="h-[2px] rounded-full bg-gradient-to-r from-transparent via-yellow-500 to-transparent bg-[length:200%_200%] my-8"
         ></motion.div>
 
         {/* Bottom */}
@@ -249,7 +249,7 @@ const Footer = () => {
             whileHover={{
               scale: 1.15,
               y: -5,
-              boxShadow: '0px 0px 25px rgba(59,130,246,0.7)',
+              boxShadow: '0px 0px 25px rgba(245,158,11,0.7)',
             }}
             whileTap={{ scale: 0.9 }}
             animate={{
@@ -259,7 +259,7 @@ const Footer = () => {
               duration: 2,
               repeat: Infinity,
             }}
-            className="relative overflow-hidden w-12 h-12 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center text-white shadow-lg"
+            className="relative overflow-hidden w-12 h-12 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center text-black shadow-lg"
           >
             <motion.div
               animate={{

@@ -1,366 +1,397 @@
-import { motion } from 'framer-motion';
-import { Code2, Brain, Users, Zap } from 'lucide-react';
+import { useState, useRef } from 'react';
+import {
+  Trophy,
+  DollarSign,
+  Award,
+  Calendar,
+} from 'lucide-react';
 
+const aboutStyles = `
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(0) scale(0); }
+  20% { opacity: 1; transform: translateY(-60px) scale(1.3); }
+  80% { opacity: 1; transform: translateY(-200px) scale(1); }
+  100% { opacity: 0; transform: translateY(-250px) scale(0.5); }
+}
+@keyframes aboutCoinSpin {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+@keyframes aboutFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes aboutPulseRing {
+  0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 0.6; }
+  100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+}
+@keyframes aboutOrb1 {
+  0%,100% { transform: translate(0,0); }
+  33%     { transform: translate(80px,-50px); }
+  66%     { transform: translate(-50px,30px); }
+}
+@keyframes aboutOrb2 {
+  0%,100% { transform: translate(0,0); }
+  33%     { transform: translate(-80px,50px); }
+  66%     { transform: translate(50px,-30px); }
+}
+@keyframes aboutCountdown {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes aboutPulseText {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+@keyframes rotateSpotlight {
+  0%   { transform: translate(-50%,-50%) rotate(0deg); }
+  100% { transform: translate(-50%,-50%) rotate(360deg); }
+}
+@keyframes particleRise {
+  0%   { opacity: 0; transform: translateY(0); }
+  20%  { opacity: 1; }
+  80%  { opacity: 0.5; }
+  100% { opacity: 0; transform: translateY(-700px); }
+}
+
+/* ── section ── */
+.about-section {
+  position: relative;
+  overflow: hidden;
+  padding: 112px 24px;
+  background: #050816;
+  cursor: default;
+}
+
+/* ── background ── */
+.about-bg-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, #050816, #081221, #020617);
+}
+.about-bg-grid {
+  position: absolute; inset: 0; opacity: 0.05;
+  background-image:
+    linear-gradient(to right,  #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.about-spotlight {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 900px; height: 900px;
+  opacity: 0.12;
+  animation: rotateSpotlight 40s linear infinite;
+}
+.about-spotlight-inner {
+  position: absolute; inset: 0;
+  background: conic-gradient(from 0deg, transparent, rgba(250,204,21,0.4), transparent);
+  filter: blur(40px);
+}
+.about-orb1 {
+  position: absolute; top: -160px; left: -160px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(234,179,8,0.15); filter: blur(120px);
+  animation: aboutOrb1 12s ease-in-out infinite;
+}
+.about-orb2 {
+  position: absolute; bottom: 0; right: 0;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(6,182,212,0.15); filter: blur(140px);
+  animation: aboutOrb2 14s ease-in-out infinite;
+}
+
+/* ── countdown ── */
+.about-countdown {
+  display: flex; justify-content: center; margin-bottom: 40px;
+}
+.about-countdown-inner {
+  background: yellow;
+  border: 1px solid rgba(234,179,8,0.3);
+  backdrop-filter: blur(16px);
+  border-radius: 9999px;
+  padding: 16px 32px;
+  animation: aboutCountdown 3s ease-in-out infinite;
+}
+.about-countdown-text { color: black; font-weight: 700; font-size: 1.125rem; }
+
+/* ── headings ── */
+.about-heading {
+  text-align: center;
+  font-size: clamp(2.5rem,7vw,4.5rem);
+  font-weight: 900; color: #fff;
+  margin-bottom: 24px; line-height: 1.1;
+}
+.about-heading-gradient {
+  display: block;
+  background: linear-gradient(to right, #fde68a, #eab308, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: aboutPulseText 3s ease-in-out infinite;
+}
+.about-sub {
+  max-width: 768px; margin: 0 auto 80px;
+  text-align: center; color: #cbd5e1;
+  font-size: 1.25rem; line-height: 1.7;
+}
+
+/* ── grid ── */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+}
+
+/* ── stat card ── */
+.about-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px;
+  padding: 32px;
+  text-align: center;
+  cursor: default;
+  transition: transform 0.4s cubic-bezier(.22,1,.36,1),
+              border-color 0.4s ease,
+              box-shadow 0.4s ease;
+}
+.about-card:hover {
+  transform: translateY(-14px) scale(1.04);
+  border-color: rgba(250,204,21,0.45);
+  box-shadow: 0 0 55px rgba(250,204,21,0.22),
+              0 0 20px rgba(250,204,21,0.1) inset;
+}
+.about-card-glow {
+  position: absolute; inset: 0; opacity: 0;
+  background: linear-gradient(135deg, rgba(250,204,21,0.08), rgba(34,211,238,0.06));
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.about-card:hover .about-card-glow { opacity: 1; }
+.about-card-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(to right, #facc15, #22d3ee, #facc15);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s ease;
+}
+.about-card:hover .about-card-bar { transform: scaleX(1); }
+
+/* ── icon ── */
+.about-icon-wrap {
+  animation: aboutFloat 4s ease-in-out infinite;
+  position: relative; z-index: 10;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+.about-icon-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(250,204,21,0.5);
+  transform: translate(-50%,-50%) scale(0.8);
+  opacity: 0;
+}
+.about-card:hover .about-icon-ring {
+  animation: aboutPulseRing 1s ease-out infinite;
+}
+
+/* ── value & label ── */
+.about-value {
+  position: relative; z-index: 10;
+  font-size: clamp(2rem,4vw,3rem);
+  font-weight: 900; color: #fff; margin-bottom: 12px;
+}
+.about-label {
+  position: relative; z-index: 10;
+  color: #94a3b8; font-size: 0.95rem;
+}
+
+/* ── coin burst (section-level) ── */
+.about-coin-wrap {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+  animation: aboutCoinFloat 2.5s ease-out forwards;
+}
+.about-coin-glow {
+  position: absolute;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(250,204,21,0.3); filter: blur(14px);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+}
+.about-coin-face {
+  width: 17px; height: 17px; border-radius: 50%;
+  background: linear-gradient(135deg, #fde68a, #eab308, #f97316);
+  border: 1px solid #fef3c7;
+  box-shadow: 0 0 28px rgba(250,204,21,0.8);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: #000;
+  animation: aboutCoinSpin 1.5s linear infinite;
+}
+
+/* ── bottom info ── */
+.about-info-box { margin-top: 80px; text-align: center; }
+.about-info-inner {
+  display: inline-flex; align-items: center; gap: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(250,204,21,0.2);
+  border-radius: 24px; padding: 24px 32px;
+  backdrop-filter: blur(16px);
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+.about-info-inner:hover {
+  border-color: rgba(250,204,21,0.45);
+  box-shadow: 0 0 40px rgba(250,204,21,0.15);
+}
+.about-info-text {
+  font-size: 1.1rem; color: #cbd5e1;
+  max-width: 480px; line-height: 1.6;
+}
+`;
+
+/* ── Stat card (hover ring only, no coin logic here) ── */
+function StatCard({ item, index }) {
+  return (
+    <div className="about-card">
+      <div className="about-card-glow" />
+      <div className="about-card-bar" />
+      <div className="about-icon-wrap" style={{ animationDelay: `${index * 0.4}s` }}>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <div className="about-icon-ring" />
+          <item.icon size={48} style={{ color: item.iconColor, display: 'block' }} />
+        </div>
+      </div>
+      <div className="about-value">{item.value}</div>
+      <p className="about-label">{item.title}</p>
+    </div>
+  );
+}
+
+/* ── About ── */
 const About = () => {
-  const skills = [
-    {
-      icon: Code2,
-      title: 'Electronics',
-      desc: 'Expertise in designing and developing electronic devices and systems.',
-      image:
-        'https://images.unsplash.com/photo-1550029402-8ea9bfe19f04?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDI2fHx8ZW58MHx8fHx8',
-    },
+  const [coins, setCoins] = useState([]);
+  const sectionRef = useRef(null);
 
-    {
-      icon: Brain,
-      title: 'AI Smart Products',
-      desc: 'Specialized in integrating AI/ML solutions into smart applications and modern AI systems.',
-      image:
-        'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1200&auto=format&fit=crop',
-    },
-
-    {
-      icon: Users,
-      title: 'Fashion & Clothes',
-      desc: 'Experience in designing premium fashion products and lifestyle accessories.',
-      image:
-        'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop',
-    },
-
-    {
-      icon: Zap,
-      title: 'Energy Products',
-      desc: 'Expertise in modern energy-efficient and eco-friendly technology products.',
-      image:
-        'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=1200&auto=format&fit=crop',
-    },
-  ];
+  const handleMouseMove = (e) => {
+    if (Math.random() > 0.15) return;
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const batch = Array.from({ length: 3 }, (_, i) => ({
+      id: Date.now() + Math.random() + i,
+      x: x + (Math.random() * 100 - 50),
+      y: y + (Math.random() * 100 - 50),
+    }));
+    setCoins((prev) => [...prev, ...batch]);
+    setTimeout(() => {
+      setCoins((prev) => prev.filter((c) => !batch.some((b) => b.id === c.id)));
+    }, 2500);
+  };
 
   const stats = [
-    {
-      label: 'Months Experience',
-      value: '6+',
-    },
-
-    {
-      label: 'Products Sold',
-      value: '80k+',
-    },
-
-    {
-      label: 'Customer Rating',
-      value: '5 Star',
-    },
-
-    {
-      label: 'Daily Active Users',
-      value: '10k+',
-    },
-  ];
-
-  const technologies = [
-    'Electronics',
-    'AI Gadgets',
-    'Smart Home',
-    'Audio Devices',
-    'Accessories',
+    { icon: DollarSign, value: '$4,500',        title: 'Total Reward Value',    iconColor: '#facc15' },
+    { icon: Award,      value: '20',             title: 'Traders Rewarded',      iconColor: '#22d3ee' },
+    { icon: Trophy,     value: '$2,000',         title: 'Top Prize',             iconColor: '#4ade80' },
+    { icon: Calendar,   value: '2 Rounds / Month', title: 'Compete Every 15 Days', iconColor: '#c084fc' },
   ];
 
   return (
-    <motion.section
-      id="about"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-slate-900 to-black"
-    >
-      {/* Animated Background */}
-      <div className="absolute top-0 left-0 w-[450px] h-[450px] bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+    <>
+      <style>{aboutStyles}</style>
 
-      <div className="absolute bottom-0 right-0 w-[450px] h-[450px] bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <section
+        id="about"
+        ref={sectionRef}
+        className="about-section"
+        onMouseMove={handleMouseMove}
+      >
+        {/* ── Background image ── */}
+       {/* ── Background image ── */}
+<div
+  className="absolute inset-0 z-0"
+  style={{
+    backgroundImage: `url('https://images.unsplash.com/photo-1707075891558-ec2b81527409?q=80&w=1113&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    opacity: 0.22,
+    filter: 'brightness(0.7)',
+  }}
+/>
 
-      {/* Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:45px_45px]"></div>
+        ── background layers ──
+        {/* <div className="about-bg-gradient" />
+        <div className="about-bg-grid" />
+        <div className="about-spotlight">
+          <div className="about-spotlight-inner" />
+        </div>
+        <div className="about-orb1" />
+        <div className="about-orb2" /> */}
 
-      <div className="relative max-w-7xl mx-auto z-10">
-        {/* Heading */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 40,
-          }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.8,
-          }}
-          viewport={{ once: true }}
-          className="text-center mb-20"
-        >
-          <motion.h2
-            animate={{
-              backgroundPosition: [
-                '0% 50%',
-                '100% 50%',
-                '0% 50%',
-              ],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-            }}
-            className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-400 bg-[length:200%_200%] bg-clip-text text-transparent mb-6"
+        {/* ── coin burst — section-wide ── */}
+        {coins.map((coin) => (
+          <div
+            key={coin.id}
+            className="about-coin-wrap"
+            style={{ left: coin.x - 22, top: coin.y - 22 }}
           >
-            About E-MART
-          </motion.h2>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="about-coin-glow" />
+              <div className="about-coin-face">₿</div>
+            </div>
+          </div>
+        ))}
 
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-            Premium futuristic electronics marketplace with
-            cutting-edge smart devices, AI products and modern
-            lifestyle technology.
+        {/* ── content ── */}
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: '80rem', margin: '0 auto' }}>
+
+          {/* Countdown */}
+          <div className="about-countdown">
+            <div className="about-countdown-inner">
+              <span className="about-countdown-text">Registration closes in - 15 days</span>
+            </div>
+          </div>
+
+          {/* Heading */}
+          <h2 className="about-heading">
+            Competition
+            <span className="about-heading-gradient">Rewards & Rules</span>
+          </h2>
+
+          <p className="about-sub">
+            Every trader competes under equal conditions
+            with transparent scoring and strict fair-play rules.
           </p>
 
-          <motion.div
-            initial={{ width: 0 }}
-            whileInView={{ width: '160px' }}
-            transition={{ duration: 1 }}
-            className="h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full mt-8"
-          ></motion.div>
-        </motion.div>
-
-        {/* Main Content */}
-        <div className="grid md:grid-cols-2 gap-14 mb-20">
-          {/* Left Side */}
-          <motion.div
-            initial={{
-              x: -80,
-              opacity: 0,
-            }}
-            whileInView={{
-              x: 0,
-              opacity: 1,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
-            viewport={{ once: true }}
-            whileHover={{
-              y: -5,
-            }}
-            className="relative overflow-hidden rounded-[32px] border border-slate-700 bg-slate-900/60 backdrop-blur-xl p-8 shadow-2xl"
-          >
-            {/* Glow */}
-            <div className="absolute -top-16 -left-16 w-48 h-48 bg-cyan-500/20 blur-3xl rounded-full"></div>
-
-            {/* Image */}
-            <motion.div
-              whileHover={{
-                scale: 1.03,
-              }}
-              className="overflow-hidden rounded-3xl mb-8"
-            >
-              <motion.img
-                whileHover={{
-                  scale: 1.1,
-                }}
-                transition={{
-                  duration: 0.7,
-                }}
-                src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop"
-                alt="about"
-                className="w-full h-[320px] object-cover rounded-3xl"
-              />
-            </motion.div>
-
-            <div className="relative z-10">
-              <p className="text-gray-300 leading-relaxed text-lg mb-6">
-                E-MART is a futuristic online electronics platform
-                offering premium gadgets, AI-powered smart products,
-                modern accessories and innovative digital solutions.
-              </p>
-
-              <p className="text-gray-300 leading-relaxed text-lg mb-8">
-                We focus on high-quality customer experience,
-                futuristic designs and advanced technologies to
-                deliver the best shopping journey for every customer.
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-4">
-                {technologies.map((tech, index) => (
-                  <motion.span
-                    key={tech}
-                    initial={{
-                      scale: 0,
-                    }}
-                    whileInView={{
-                      scale: 1,
-                    }}
-                    transition={{
-                      delay: index * 0.1,
-                    }}
-                    whileHover={{
-                      scale: 1.1,
-                      y: -4,
-                      boxShadow:
-                        '0px 0px 20px rgba(34,211,238,0.3)',
-                    }}
-                    className="px-5 py-3 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-sm font-semibold cursor-pointer backdrop-blur-lg"
-                  >
-                    {tech}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
           {/* Stats */}
-          <motion.div
-            initial={{
-              x: 80,
-              opacity: 0,
-            }}
-            whileInView={{
-              x: 0,
-              opacity: 1,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
-            viewport={{ once: true }}
-            className="grid grid-cols-2 gap-6"
-          >
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{
-                  y: 40,
-                  opacity: 0,
-                }}
-                whileInView={{
-                  y: 0,
-                  opacity: 1,
-                }}
-                transition={{
-                  delay: index * 0.15,
-                }}
-                whileHover={{
-                  y: -10,
-                  scale: 1.05,
-                  boxShadow:
-                    '0px 0px 30px rgba(34,211,238,0.25)',
-                }}
-                className="relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-900/50 backdrop-blur-xl p-8 text-center group"
-              >
-                {/* Glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-
-                <div className="relative z-10">
-                  <motion.h1
-                    animate={{
-                      scale: [1, 1.08, 1],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                    }}
-                    className="text-5xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4"
-                  >
-                    {stat.value}
-                  </motion.h1>
-
-                  <p className="text-gray-400 text-sm">
-                    {stat.label}
-                  </p>
-                </div>
-              </motion.div>
+          <div className="about-grid">
+            {stats.map((item, index) => (
+              <StatCard key={index} item={item} index={index} />
             ))}
-          </motion.div>
+          </div>
+
+          {/* Bottom info */}
+          <div className="about-info-box">
+            <div className="about-info-inner">
+              <Trophy style={{ color: '#facc15', flexShrink: 0 }} size={32} />
+              <p className="about-info-text">
+                Trade smart, stay disciplined, and compete
+                against Asia's fastest-growing community of traders.
+              </p>
+            </div>
+          </div>
+
         </div>
-
-        {/* Skills */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {skills.map((skill, index) => (
-            <motion.div
-              key={skill.title}
-              initial={{
-                y: 50,
-                opacity: 0,
-              }}
-              whileInView={{
-                y: 0,
-                opacity: 1,
-              }}
-              transition={{
-                delay: index * 0.15,
-                duration: 0.7,
-              }}
-              viewport={{ once: true }}
-              whileHover={{
-                y: -12,
-                scale: 1.03,
-              }}
-              className="group relative overflow-hidden rounded-[30px] border border-slate-700 bg-slate-900/60 backdrop-blur-xl shadow-2xl"
-            >
-              {/* Image */}
-              <div className="relative overflow-hidden">
-                <motion.img
-                  whileHover={{
-                    scale: 1.12,
-                  }}
-                  transition={{
-                    duration: 0.7,
-                  }}
-                  src={skill.image}
-                  alt={skill.title}
-                  className="w-full h-56 object-cover"
-                />
-
-                <div className="absolute inset-0 bg-black/40"></div>
-
-                {/* Floating Icon */}
-                <motion.div
-                  whileHover={{
-                    rotate: 12,
-                    scale: 1.15,
-                  }}
-                  className="absolute bottom-5 left-5 w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 flex items-center justify-center"
-                >
-                  <skill.icon className="w-8 h-8 text-cyan-400" />
-                </motion.div>
-              </div>
-
-              {/* Content */}
-              <div className="relative p-6 z-10">
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  {skill.title}
-                </h3>
-
-                <p className="text-gray-400 leading-relaxed text-sm">
-                  {skill.desc}
-                </p>
-
-                {/* Bottom Glow */}
-                <motion.div
-                  initial={{
-                    width: 0,
-                  }}
-                  whileHover={{
-                    width: '100%',
-                  }}
-                  className="h-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mt-6"
-                ></motion.div>
-              </div>
-
-              {/* Hover Glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.section>
+      </section>
+    </>
   );
 };
 
