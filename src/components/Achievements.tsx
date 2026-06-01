@@ -2,14 +2,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Users, DollarSign } from "lucide-react";
 import { useState, useRef } from "react";
 
+// ── Types ──────────────────────────────────────────────────────────────────
+
+interface Coin {
+  id: number;
+  x: number;
+  y: number;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+
 const Achievements = () => {
-  const [coins, setCoins] = useState([]);
-  const sectionRef = useRef(null);
+  const [coins, setCoins] = useState<Coin[]>([]);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  const addCoin = (e) => {
-    const rect = sectionRef.current.getBoundingClientRect();
+  const addCoin = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
 
-    const coin = {
+    const coin: Coin = {
       id: Date.now() + Math.random(),
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,

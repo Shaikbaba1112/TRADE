@@ -2,21 +2,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Clock, DollarSign, TrendingUp } from "lucide-react";
 import { useState, useCallback, useRef, useEffect } from "react";
 
+// ── Types ──────────────────────────────────────────────────────────────────
+
+interface Coin {
+  id: number;
+  x: number;
+  y: number;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+
 const Experience = () => {
   // ---------- Bitcoin hover effect ----------
-  const [coins, setCoins] = useState([]);
-  const coinId = useRef(0);
-  const sectionRef = useRef(null);
-  const throttleRef = useRef(false);
+  const [coins, setCoins] = useState<Coin[]>([]);
+  const coinId = useRef<number>(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const throttleRef = useRef<boolean>(false);
 
-  const addCoin = useCallback((e) => {
+  const addCoin = useCallback((e: React.MouseEvent<HTMLElement>) => {
     if (throttleRef.current) return;
     throttleRef.current = true;
     requestAnimationFrame(() => {
       throttleRef.current = false;
     });
 
-    const rect = sectionRef.current.getBoundingClientRect();
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const id = coinId.current++;

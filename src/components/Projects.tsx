@@ -2,21 +2,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Trophy } from 'lucide-react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
+// ── Types ──────────────────────────────────────────────────────────────────
+
+interface Coin {
+  id: number;
+  x: number;
+  y: number;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+
 const Projects = () => {
   // ---------- Bitcoin hover effect ----------
-  const [coins, setCoins] = useState([]);
-  const coinId = useRef(0);
-  const sectionRef = useRef(null);
-  const throttleRef = useRef(false);
+  const [coins, setCoins] = useState<Coin[]>([]);
+  const coinId = useRef<number>(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const throttleRef = useRef<boolean>(false);
 
-  const addCoin = useCallback((e) => {
+  const addCoin = useCallback((e: React.MouseEvent<HTMLElement>) => {
     if (throttleRef.current) return;
     throttleRef.current = true;
     requestAnimationFrame(() => {
       throttleRef.current = false;
     });
 
-    const rect = sectionRef.current.getBoundingClientRect();
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const id = coinId.current++;
@@ -391,7 +403,7 @@ const Projects = () => {
                     className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-black px-6 py-3 rounded-2xl font-semibold shadow-xl"
                   >
                     <ExternalLink size={18} />
-                                      </motion.a>
+                  </motion.a>
 
                   <motion.a
                     href={project.links.github}

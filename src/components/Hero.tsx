@@ -1,24 +1,81 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Trophy, DollarSign, TrendingUp, Star, ShieldCheck } from "lucide-react";
 
-/* ───────────────────────────────────────
-   NEW: Golden Cursor Trail Canvas
-─────────────────────────────────────── */
-function TrailCanvas({ containerRef }) {
-  const canvasRef = useRef(null);
-  const mouseRef = useRef({ x: -100, y: -100 });
-  const dotsRef = useRef([]);
+// ── Types ──────────────────────────────────────────────────────────────────
 
-  // listen to mouse movement relative to the section
+interface TrailDot {
+  x: number;
+  y: number;
+  life: number;
+  size: number;
+  isRing?: boolean;
+}
+
+interface HexNode {
+  x: number;
+  y: number;
+  r: number;
+  phase: number;
+  brightness: number;
+}
+
+interface Beam {
+  a: HexNode;
+  b: HexNode;
+  op: number;
+}
+
+interface Packet {
+  beam: Beam;
+  t: number;
+  speed: number;
+  size: number;
+}
+
+interface Coin {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  vy: number;
+  vx: number;
+  rot: number;
+  rotV: number;
+  phase: number;
+  tilt: number;
+}
+
+interface Ring {
+  x: number;
+  y: number;
+  r: number;
+  maxR: number;
+  speed: number;
+  opacity: number;
+  phase: number;
+}
+
+interface HeroCoin {
+  id: number;
+  x: number;
+  y: number;
+}
+
+// ── TrailCanvas ────────────────────────────────────────────────────────────
+
+function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLElement | null> }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef<{ x: number; y: number }>({ x: -100, y: -100 });
+  const dotsRef = useRef<TrailDot[]>([]);
+
   useEffect(() => {
     const section = containerRef.current;
     if (!section) return;
 
-    const handleMove = (e) => {
+    const handleMove = (e: MouseEvent) => {
       const rect = section.getBoundingClientRect();
       mouseRef.current.x = e.clientX - rect.left;
       mouseRef.current.y = e.clientY - rect.top;
-      // spawn a new dot every frame (will be limited by RAF)
       dotsRef.current.push({
         x: mouseRef.current.x,
         y: mouseRef.current.y,
@@ -34,17 +91,19 @@ function TrailCanvas({ containerRef }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     const W = canvas.offsetWidth;
     const H = canvas.offsetHeight;
     canvas.width = W;
     canvas.height = H;
 
-    let animId;
+    let animId: number;
+
     const tick = () => {
       ctx.clearRect(0, 0, W, H);
       const dots = dotsRef.current;
 
-      // draw and update dots
       for (let i = dots.length - 1; i >= 0; i--) {
         const d = dots[i];
         d.life -= 0.02;
@@ -52,7 +111,6 @@ function TrailCanvas({ containerRef }) {
           dots.splice(i, 1);
           continue;
         }
-        // little drift toward the cursor (magnetic effect)
         const dx = mouseRef.current.x - d.x;
         const dy = mouseRef.current.y - d.y;
         d.x += dx * 0.08;
@@ -66,10 +124,9 @@ function TrailCanvas({ containerRef }) {
         ctx.shadowColor = "#facc15";
         ctx.shadowBlur = 10 * d.life;
         ctx.fill();
-        ctx.shadowBlur = 0; // reset for next
+        ctx.shadowBlur = 0;
       }
 
-      // occasional pulse ring from cursor
       if (Math.random() < 0.05 && mouseRef.current.x > 0) {
         dots.push({
           x: mouseRef.current.x,
@@ -95,22 +152,28 @@ function TrailCanvas({ containerRef }) {
         width: "100%",
         height: "100%",
         pointerEvents: "none",
-        zIndex: 5, // above BitcoinCanvas but below content
+        zIndex: 5,
       }}
     />
   );
 }
 
-/* ── Bitcoin Canvas (unchanged) ── */
+// ── BitcoinCanvas ──────────────────────────────────────────────────────────
+
 function BitcoinCanvas() {
-  // ... (your exact BitcoinCanvas code, unchanged)
-  // I'm keeping it here for completeness, but no modifications.
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let coins: Coin[] = [];
+    let rings: Ring[] = [];
+    let hexNodes: HexNode[] = [];
+    let beams: Beam[] = [];
+    let packets: Packet[] = [];
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -118,17 +181,11 @@ function BitcoinCanvas() {
       initAll();
     };
 
-    let coins = [];
-    let rings = [];
-    let hexNodes = [];
-    let beams = [];
-    let packets = [];
-
     function initAll() {
-      const W = canvas.width;
-      const H = canvas.height;
+      const W = canvas!.width;
+      const H = canvas!.height;
 
-      coins = Array.from({ length: 18 }, (_, i) => ({
+      coins = Array.from({ length: 18 }, (_, i): Coin => ({
         x: (i / 18) * W + Math.random() * 80 - 40,
         y: Math.random() * H,
         size: Math.random() * 38 + 20,
@@ -141,8 +198,8 @@ function BitcoinCanvas() {
         tilt: 0,
       }));
 
-      rings = Array.from({ length: 6 }, (_, i) => ({
-        x: (0.15 + (i * 0.17)) * W,
+      rings = Array.from({ length: 6 }, (_, i): Ring => ({
+        x: (0.15 + i * 0.17) * W,
         y: (0.2 + (i % 3) * 0.3) * H,
         r: Math.random() * 60 + 20,
         maxR: Math.random() * 160 + 80,
@@ -151,7 +208,7 @@ function BitcoinCanvas() {
         phase: (i / 6) * Math.PI * 2,
       }));
 
-      hexNodes = Array.from({ length: 32 }, () => ({
+      hexNodes = Array.from({ length: 32 }, (): HexNode => ({
         x: Math.random() * W,
         y: Math.random() * H,
         r: Math.random() * 2.5 + 1,
@@ -166,7 +223,7 @@ function BitcoinCanvas() {
         if (a !== b) beams.push({ a, b, op: Math.random() * 0.09 + 0.02 });
       }
 
-      packets = beams.slice(0, 14).map((beam) => ({
+      packets = beams.slice(0, 14).map((beam): Packet => ({
         beam,
         t: Math.random(),
         speed: Math.random() * 0.004 + 0.0015,
@@ -177,81 +234,81 @@ function BitcoinCanvas() {
     resize();
     window.addEventListener("resize", resize);
 
-    function drawCoin(c, frame) {
+    function drawCoin(c: Coin, frame: number) {
       const { x, y, size, opacity, rot, phase } = c;
       const glow = Math.sin(phase + frame * 0.022) * 0.45 + 0.55;
 
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(rot);
-      ctx.globalAlpha = opacity * glow;
+      ctx!.save();
+      ctx!.translate(x, y);
+      ctx!.rotate(rot);
+      ctx!.globalAlpha = opacity * glow;
 
-      ctx.beginPath();
-      ctx.arc(0, 0, size + 5 * glow, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(253,224,71,${0.35 * glow})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      ctx!.beginPath();
+      ctx!.arc(0, 0, size + 5 * glow, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(253,224,71,${0.35 * glow})`;
+      ctx!.lineWidth = 1;
+      ctx!.stroke();
 
-      ctx.beginPath();
-      ctx.arc(0, 0, size * 0.88, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(250,204,21,${0.5 * glow})`;
-      ctx.lineWidth = 0.7;
-      ctx.stroke();
+      ctx!.beginPath();
+      ctx!.arc(0, 0, size * 0.88, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(250,204,21,${0.5 * glow})`;
+      ctx!.lineWidth = 0.7;
+      ctx!.stroke();
 
-      const g = ctx.createRadialGradient(-size * 0.25, -size * 0.25, size * 0.05, 0, 0, size * 0.78);
+      const g = ctx!.createRadialGradient(-size * 0.25, -size * 0.25, size * 0.05, 0, 0, size * 0.78);
       g.addColorStop(0, "rgba(254,240,138,0.95)");
       g.addColorStop(0.35, "rgba(250,204,21,0.85)");
       g.addColorStop(0.75, "rgba(234,179,8,0.75)");
       g.addColorStop(1, "rgba(154,52,18,0.55)");
-      ctx.beginPath();
-      ctx.arc(0, 0, size * 0.78, 0, Math.PI * 2);
-      ctx.fillStyle = g;
-      ctx.fill();
+      ctx!.beginPath();
+      ctx!.arc(0, 0, size * 0.78, 0, Math.PI * 2);
+      ctx!.fillStyle = g;
+      ctx!.fill();
 
-      ctx.beginPath();
-      ctx.arc(-size * 0.18, -size * 0.22, size * 0.42, Math.PI * 1.1, Math.PI * 1.85);
-      ctx.strokeStyle = `rgba(255,255,220,${0.45 * glow})`;
-      ctx.lineWidth = size * 0.09;
-      ctx.stroke();
+      ctx!.beginPath();
+      ctx!.arc(-size * 0.18, -size * 0.22, size * 0.42, Math.PI * 1.1, Math.PI * 1.85);
+      ctx!.strokeStyle = `rgba(255,255,220,${0.45 * glow})`;
+      ctx!.lineWidth = size * 0.09;
+      ctx!.stroke();
 
-      ctx.fillStyle = `rgba(0,0,0,${0.72 * glow})`;
-      ctx.font = `900 ${size * 0.82}px Georgia,serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("₿", 0, size * 0.04);
+      ctx!.fillStyle = `rgba(0,0,0,${0.72 * glow})`;
+      ctx!.font = `900 ${size * 0.82}px Georgia,serif`;
+      ctx!.textAlign = "center";
+      ctx!.textBaseline = "middle";
+      ctx!.fillText("₿", 0, size * 0.04);
 
-      ctx.restore();
+      ctx!.restore();
     }
 
-    function drawNode(nd, frame) {
+    function drawNode(nd: HexNode) {
       nd.phase += 0.018;
       const pulse = Math.sin(nd.phase) * 0.5 + 0.5;
       const br = nd.brightness;
-      ctx.beginPath();
-      ctx.arc(nd.x, nd.y, nd.r + 5 * pulse, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(250,204,21,${br * 0.28 * pulse})`;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(nd.x, nd.y, nd.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(250,204,21,${br + 0.15 * pulse})`;
-      ctx.fill();
+      ctx!.beginPath();
+      ctx!.arc(nd.x, nd.y, nd.r + 5 * pulse, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(250,204,21,${br * 0.28 * pulse})`;
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.arc(nd.x, nd.y, nd.r, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(250,204,21,${br + 0.15 * pulse})`;
+      ctx!.fill();
     }
 
-    function drawRing(rng, frame) {
+    function drawRing(rng: Ring) {
       rng.phase += 0.012;
-      const t = (Math.sin(rng.phase) * 0.5 + 0.5);
+      const t = Math.sin(rng.phase) * 0.5 + 0.5;
       const r = rng.r + (rng.maxR - rng.r) * t;
       const op = rng.opacity * (1 - t) * 0.7;
-      ctx.beginPath();
-      ctx.arc(rng.x, rng.y, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(250,204,21,${op})`;
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(rng.x, rng.y, r * 0.7, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(34,211,238,${op * 0.5})`;
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
+      ctx!.beginPath();
+      ctx!.arc(rng.x, rng.y, r, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(250,204,21,${op})`;
+      ctx!.lineWidth = 1.2;
+      ctx!.stroke();
+      ctx!.beginPath();
+      ctx!.arc(rng.x, rng.y, r * 0.7, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(34,211,238,${op * 0.5})`;
+      ctx!.lineWidth = 0.6;
+      ctx!.stroke();
     }
 
     const GHOSTS = [
@@ -263,41 +320,41 @@ function BitcoinCanvas() {
     ];
 
     let frame = 0;
-    let animId;
+    let animId: number;
 
     const tick = () => {
       frame++;
-      const W = canvas.width;
-      const H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
+      const W = canvas!.width;
+      const H = canvas!.height;
+      ctx!.clearRect(0, 0, W, H);
 
       GHOSTS.forEach((g) => {
         const pulse = Math.sin(frame * 0.009 + g.phase) * 0.35 + 0.65;
-        ctx.save();
-        ctx.globalAlpha = g.op * pulse;
-        ctx.font = `900 ${g.size}px Georgia,serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#eab308";
-        ctx.fillText("₿", g.rx * W, g.ry * H);
-        ctx.restore();
+        ctx!.save();
+        ctx!.globalAlpha = g.op * pulse;
+        ctx!.font = `900 ${g.size}px Georgia,serif`;
+        ctx!.textAlign = "center";
+        ctx!.textBaseline = "middle";
+        ctx!.fillStyle = "#eab308";
+        ctx!.fillText("₿", g.rx * W, g.ry * H);
+        ctx!.restore();
       });
 
       beams.forEach(({ a, b, op }) => {
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(a.x, b.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = `rgba(250,204,21,${op})`;
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
+        ctx!.beginPath();
+        ctx!.moveTo(a.x, a.y);
+        ctx!.lineTo(a.x, b.y);
+        ctx!.lineTo(b.x, b.y);
+        ctx!.strokeStyle = `rgba(250,204,21,${op})`;
+        ctx!.lineWidth = 0.6;
+        ctx!.stroke();
       });
 
       packets.forEach((pkt) => {
         pkt.t += pkt.speed;
         if (pkt.t > 1) pkt.t = 0;
         const { a, b } = pkt.beam;
-        let px, py;
+        let px: number, py: number;
         if (pkt.t < 0.5) {
           px = a.x;
           py = a.y + (b.y - a.y) * (pkt.t * 2);
@@ -305,14 +362,14 @@ function BitcoinCanvas() {
           px = a.x + (b.x - a.x) * ((pkt.t - 0.5) * 2);
           py = b.y;
         }
-        ctx.beginPath();
-        ctx.arc(px, py, pkt.size, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(253,224,71,0.7)";
-        ctx.fill();
+        ctx!.beginPath();
+        ctx!.arc(px, py, pkt.size, 0, Math.PI * 2);
+        ctx!.fillStyle = "rgba(253,224,71,0.7)";
+        ctx!.fill();
       });
 
-      hexNodes.forEach((nd) => drawNode(nd, frame));
-      rings.forEach((rng) => drawRing(rng, frame));
+      hexNodes.forEach((nd) => drawNode(nd));
+      rings.forEach((rng) => drawRing(rng));
 
       coins.forEach((c) => {
         c.phase += 0.018;
@@ -354,7 +411,7 @@ function BitcoinCanvas() {
   );
 }
 
-/* ── Styles (unchanged) ── */
+/* ── Styles ── */
 const styles = `
 @keyframes floatUp {
   0% { opacity: 0; transform: translateY(0) scale(0); }
@@ -639,12 +696,11 @@ const styles = `
 .trust-divider { width: 1px; height: 32px; background: #334155; }
 `;
 
-/* ════════════════════════════════════════
-   HERO (unchanged, with new trail added)
-════════════════════════════════════════ */
+// ── Hero ───────────────────────────────────────────────────────────────────
+
 export default function Hero() {
-  const [coins, setCoins] = useState([]);
-  const sectionRef = useRef(null);
+  const [coins, setCoins] = useState<HeroCoin[]>([]);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const particles = useMemo(
     () =>
@@ -657,7 +713,7 @@ export default function Hero() {
     []
   );
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (Math.random() > 0.15) return;
     const rect = sectionRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -665,7 +721,7 @@ export default function Hero() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const batch = Array.from({ length: 3 }, (_, i) => ({
+    const batch: HeroCoin[] = Array.from({ length: 3 }, (_, i) => ({
       id: Date.now() + Math.random() + i,
       x: x + (Math.random() * 100 - 50),
       y: y + (Math.random() * 100 - 50),
@@ -708,13 +764,13 @@ export default function Hero() {
         <div className="bg-orb1" />
         <div className="bg-orb2" />
 
-        {/* ★ Bitcoin animated canvas ★ */}
+        {/* Bitcoin animated canvas */}
         <BitcoinCanvas />
 
-        {/* ★ NEW: Golden Cursor Trail ★ */}
+        {/* Golden Cursor Trail */}
         <TrailCanvas containerRef={sectionRef} />
 
-        {/* Floating particles (existing) */}
+        {/* Floating particles */}
         {particles.map((p) => (
           <div
             key={p.id}
@@ -732,7 +788,7 @@ export default function Hero() {
           />
         ))}
 
-        {/* Coins on hover (existing) */}
+        {/* Coins on hover */}
         {coins.map((coin) => (
           <div
             key={coin.id}
@@ -750,7 +806,7 @@ export default function Hero() {
           </div>
         ))}
 
-        {/* Content (unchanged) */}
+        {/* Content */}
         <div className="content-wrapper">
           <div className="badge">
             <Trophy color="#facc15" size={20} />
@@ -789,9 +845,9 @@ export default function Hero() {
             No real money required. No risk. Just pure competition.
           </p>
           <a href="#contact" className="cta-btn">
-  <span className="cta-shimmer" />
-  Start Trading – Free Entry
-</a>
+            <span className="cta-shimmer" />
+            Start Trading – Free Entry
+          </a>
           <div className="traders-row">
             {[
               "https://i.pravatar.cc/150?img=12",

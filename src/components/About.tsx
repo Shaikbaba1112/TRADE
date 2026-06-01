@@ -4,6 +4,7 @@ import {
   DollarSign,
   Award,
   Calendar,
+  type LucideIcon,
 } from 'lucide-react';
 
 const aboutStyles = `
@@ -217,7 +218,7 @@ const aboutStyles = `
   position: absolute;
   pointer-events: none;
   z-index: 100;
-  animation: aboutCoinFloat 2.5s ease-out forwards;
+  animation: floatUp 2.5s ease-out forwards;
 }
 .about-coin-glow {
   position: absolute;
@@ -256,8 +257,22 @@ const aboutStyles = `
 }
 `;
 
-/* ── Stat card (hover ring only, no coin logic here) ── */
-function StatCard({ item, index }) {
+// ── Types ──
+interface StatItem {
+  icon: LucideIcon;
+  value: string;
+  title: string;
+  iconColor: string;
+}
+
+interface Coin {
+  id: number;
+  x: number;
+  y: number;
+}
+
+// ── Stat card ──
+function StatCard({ item, index }: { item: StatItem; index: number }) {
   return (
     <div className="about-card">
       <div className="about-card-glow" />
@@ -274,18 +289,18 @@ function StatCard({ item, index }) {
   );
 }
 
-/* ── About ── */
+// ── About ──
 const About = () => {
-  const [coins, setCoins] = useState([]);
-  const sectionRef = useRef(null);
+  const [coins, setCoins] = useState<Coin[]>([]);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (Math.random() > 0.15) return;
     const rect = sectionRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const batch = Array.from({ length: 3 }, (_, i) => ({
+    const batch: Coin[] = Array.from({ length: 3 }, (_, i) => ({
       id: Date.now() + Math.random() + i,
       x: x + (Math.random() * 100 - 50),
       y: y + (Math.random() * 100 - 50),
@@ -296,10 +311,10 @@ const About = () => {
     }, 2500);
   };
 
-  const stats = [
-    { icon: DollarSign, value: '$4,500',        title: 'Total Reward Value',    iconColor: '#facc15' },
-    { icon: Award,      value: '20',             title: 'Traders Rewarded',      iconColor: '#22d3ee' },
-    { icon: Trophy,     value: '$2,000',         title: 'Top Prize',             iconColor: '#4ade80' },
+  const stats: StatItem[] = [
+    { icon: DollarSign, value: '$4,500',          title: 'Total Reward Value',     iconColor: '#facc15' },
+    { icon: Award,      value: '20',              title: 'Traders Rewarded',       iconColor: '#22d3ee' },
+    { icon: Trophy,     value: '$2,000',          title: 'Top Prize',              iconColor: '#4ade80' },
     { icon: Calendar,   value: '2 Rounds / Month', title: 'Compete Every 15 Days', iconColor: '#c084fc' },
   ];
 
@@ -314,21 +329,20 @@ const About = () => {
         onMouseMove={handleMouseMove}
       >
         {/* ── Background image ── */}
-       {/* ── Background image ── */}
-<div
-  className="absolute inset-0 z-0"
-  style={{
-    backgroundImage: `url('https://images.unsplash.com/photo-1707075891558-ec2b81527409?q=80&w=1113&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    opacity: 0.22,
-    filter: 'brightness(0.7)',
-  }}
-/>
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1707075891558-ec2b81527409?q=80&w=1113&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.22,
+            filter: 'brightness(0.7)',
+          }}
+        />
 
-        ── background layers ──
-        {/* <div className="about-bg-gradient" />
+        {/* ── background layers ──
+        <div className="about-bg-gradient" />
         <div className="about-bg-grid" />
         <div className="about-spotlight">
           <div className="about-spotlight-inner" />
