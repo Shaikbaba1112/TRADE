@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Trophy, DollarSign, TrendingUp, Star, ShieldCheck } from "lucide-react";
+import { Trophy, Star, ShieldCheck } from "lucide-react";
+
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -579,7 +580,7 @@ const styles = `
   font-weight: 600;
 }
 .heading {
-  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-size: clamp(2.5rem, 8vw, 1rem);
   font-weight: 900;
   color: #fff;
   line-height: 1.1;
@@ -910,23 +911,6 @@ export default function Hero() {
             Trade with <strong>$10,000 virtual funds</strong>, compete for real
             cash-equivalent rewards, and prove you belong among the top traders.
           </p>
-          <div className="stats-grid">
-            <div className="stat-card stat-card-yellow">
-              <Trophy color="#facc15" size={40} style={{ margin: "0 auto" }} />
-              <div className="stat-number">$2,000</div>
-              <p className="stat-label">Grand Prize</p>
-            </div>
-            <div className="stat-card stat-card-cyan">
-              <DollarSign color="#22d3ee" size={40} style={{ margin: "0 auto" }} />
-              <div className="stat-number">$10,000</div>
-              <p className="stat-label">Demo Balance</p>
-            </div>
-            <div className="stat-card stat-card-green">
-              <TrendingUp color="#4ade80" size={40} style={{ margin: "0 auto" }} />
-              <div className="stat-number">Top 20</div>
-              <p className="stat-label">Win Live-Account Rewards</p>
-            </div>
-          </div>
           <p className="sub-desc">
             Whether you're a day trader, scalper, or swing specialist — your
             skills decide your rank.
