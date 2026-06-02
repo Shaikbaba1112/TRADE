@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Trophy, DollarSign, TrendingUp, Star, ShieldCheck} from "lucide-react";
+import { Trophy, Star, ShieldCheck, DollarSign, TrendingUp } from "lucide-react";
+import * as THREE from "three";
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Types (for existing 2D effects) ─────────────────────────────────────
 
 interface TrailDot {
   x: number;
@@ -11,57 +12,13 @@ interface TrailDot {
   isRing?: boolean;
 }
 
-interface HexNode {
-  x: number;
-  y: number;
-  r: number;
-  phase: number;
-  brightness: number;
-}
-
-interface Beam {
-  a: HexNode;
-  b: HexNode;
-  op: number;
-}
-
-interface Packet {
-  beam: Beam;
-  t: number;
-  speed: number;
-  size: number;
-}
-
-interface Coin {
-  x: number;
-  y: number;
-  size: number;
-  opacity: number;
-  vy: number;
-  vx: number;
-  rot: number;
-  rotV: number;
-  phase: number;
-  tilt: number;
-}
-
-interface Ring {
-  x: number;
-  y: number;
-  r: number;
-  maxR: number;
-  speed: number;
-  opacity: number;
-  phase: number;
-}
-
 interface HeroCoin {
   id: number;
   x: number;
   y: number;
 }
 
-// ── TrailCanvas ────────────────────────────────────────────────────────────
+// ── Golden Cursor Trail (unchanged) ────────────────────────────────────
 
 function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLElement | null> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -93,15 +50,16 @@ function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLEleme
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const W = canvas.offsetWidth;
-    const H = canvas.offsetHeight;
-    canvas.width = W;
-    canvas.height = H;
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
 
     let animId: number;
-
     const tick = () => {
-      ctx.clearRect(0, 0, W, H);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const dots = dotsRef.current;
 
       for (let i = dots.length - 1; i >= 0; i--) {
@@ -140,7 +98,10 @@ function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLEleme
       animId = requestAnimationFrame(tick);
     };
     tick();
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
   return (
@@ -158,260 +119,281 @@ function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLEleme
   );
 }
 
-// ── BitcoinCanvas ──────────────────────────────────────────────────────────
+// ── 3D Scene (Three.js) ────────────────────────────────────────────────
 
-function BitcoinCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const ThreeScene = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<any | null>(null);
+  const cameraRef = useRef<any | null>(null);
+  const rendererRef = useRef<any | null>(null);
+  const earthRef = useRef<any | null>(null);
+  const coinsRef = useRef<any[]>([]);
+  const requestRef = useRef<number | null>(null);
+  const timeRef = useRef(0);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!containerRef.current) return;
 
-    let coins: Coin[] = [];
-    let rings: Ring[] = [];
-    let hexNodes: HexNode[] = [];
-    let beams: Beam[] = [];
-    let packets: Packet[] = [];
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050816);
+    scene.fog = new THREE.FogExp2(0x050816, 0.0005);
+    sceneRef.current = scene;
 
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      initAll();
+    // Camera: perspective, positioned to see Earth and floating coins
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(0, 2, 12);
+    cameraRef.current = camera;
+
+    // Renderer with transparency for overlay
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(
+      containerRef.current.clientWidth,
+      containerRef.current.clientHeight
+    );
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true; // enable shadows for coins
+    containerRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // ---- Lighting (cinematic, high-end) ----
+    // Ambient light
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene.add(ambientLight);
+    // Main directional light (sun)
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(5, 10, 7);
+    dirLight.castShadow = true;
+    dirLight.receiveShadow = false;
+    scene.add(dirLight);
+    // Fill light from below
+    const fillLight = new THREE.PointLight(0x445566, 0.5);
+    fillLight.position.set(0, -3, 0);
+    scene.add(fillLight);
+    // Back rim light to highlight coins
+    const rimLight = new THREE.PointLight(0xffaa33, 0.8);
+    rimLight.position.set(-2, 1, -4);
+    scene.add(rimLight);
+    // Dynamic golden point light that rotates around the scene
+    const goldLight = new THREE.PointLight(0xfacc15, 0.6);
+    goldLight.position.set(3, 2, 4);
+    scene.add(goldLight);
+
+    // Stars background (particle system)
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 200;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 80 - 40;
+    }
+    starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.7 });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // ---- Earth ----
+    // High-res Earth texture (NASA visible earth)
+    const textureLoader = new THREE.TextureLoader();
+    const earthMap = textureLoader.load("https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg");
+    const earthSpecularMap = textureLoader.load("https://threejs.org/examples/textures/planets/earth_specular_2048.jpg");
+    const earthNormalMap = textureLoader.load("https://threejs.org/examples/textures/planets/earth_normal_2048.jpg");
+    const cloudMap = textureLoader.load("https://threejs.org/examples/textures/planets/earth_clouds_1024.png");
+
+    const earthGeometry = new THREE.SphereGeometry(2.2, 128, 128);
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      map: earthMap,
+      specularMap: earthSpecularMap,
+      specular: new THREE.Color("grey"),
+      shininess: 5,
+      normalMap: earthNormalMap,
+    });
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earth);
+    earthRef.current = earth;
+
+    // Clouds layer
+    const cloudGeometry = new THREE.SphereGeometry(2.22, 128, 128);
+    const cloudMaterial = new THREE.MeshPhongMaterial({
+      map: cloudMap,
+      transparent: true,
+      opacity: 0.15,
+      blending: THREE.AdditiveBlending,
+    });
+    const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+    scene.add(clouds);
+
+    // ---- Floating Gold Bitcoin Coins (3D) ----
+    // Function to create a single physical-looking Bitcoin coin
+    const createBitcoinCoin = (x: number, y: number, z: number) => {
+      const group = new THREE.Group();
+
+      // Coin body (cylinder with gold material)
+      const cylinderGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.08, 64);
+      const goldMaterial = new THREE.MeshStandardMaterial({
+        color: 0xfacc15,
+        emissive: 0x442200,
+        emissiveIntensity: 0.3,
+        metalness: 0.85,
+        roughness: 0.25,
+      });
+      const body = new THREE.Mesh(cylinderGeo, goldMaterial);
+      body.castShadow = true;
+      body.receiveShadow = false;
+      group.add(body);
+
+      // Edge ring (torrus for detail)
+      const edgeGeo = new THREE.TorusGeometry(0.36, 0.03, 32, 100);
+      const edgeMat = new THREE.MeshStandardMaterial({ color: 0xffdd77, metalness: 0.9, roughness: 0.2 });
+      const ring = new THREE.Mesh(edgeGeo, edgeMat);
+      ring.rotation.x = Math.PI / 2;
+      group.add(ring);
+
+      // Bitcoin symbol on both sides: create a canvas texture with "₿"
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#facc15";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "Bold 380px 'Arial'";
+      ctx.fillStyle = "#000000";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("₿", canvas.width / 2, canvas.height / 2);
+      const symbolTexture = new THREE.CanvasTexture(canvas);
+      const symbolMaterial = new THREE.MeshStandardMaterial({
+        map: symbolTexture,
+        metalness: 0.7,
+        roughness: 0.3,
+        color: 0xfacc15,
+      });
+      const frontFace = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.02, 32), symbolMaterial);
+      frontFace.position.z = 0.045;
+      const backFace = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.02, 32), symbolMaterial);
+      backFace.position.z = -0.045;
+      group.add(frontFace);
+      group.add(backFace);
+
+      // Add a subtle glow using point light attached? Not needed; environment lights will do.
+      group.position.set(x, y, z);
+      return group;
     };
 
-    function initAll() {
-      const W = canvas!.width;
-      const H = canvas!.height;
+    // Create 25 coins floating in a spherical shell around the scene
+    const coinCount = 25;
+    for (let i = 0; i < coinCount; i++) {
+      // Random positions within a sphere radius 4 to 7, avoiding Earth intersection
+      const radius = 4 + Math.random() * 3;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const x = Math.sin(phi) * Math.cos(theta) * radius;
+      const y = Math.sin(phi) * Math.sin(theta) * radius * 0.8; // flatten vertical spread
+      const z = Math.cos(phi) * radius;
+      const coin = createBitcoinCoin(x, y, z);
+      scene.add(coin);
+      coinsRef.current.push(coin);
+    }
 
-      coins = Array.from({ length: 18 }, (_, i): Coin => ({
-        x: (i / 18) * W + Math.random() * 80 - 40,
-        y: Math.random() * H,
-        size: Math.random() * 38 + 20,
-        opacity: Math.random() * 0.22 + 0.06,
-        vy: -(Math.random() * 0.3 + 0.1),
-        vx: (Math.random() - 0.5) * 0.25,
-        rot: Math.random() * Math.PI * 2,
-        rotV: (Math.random() - 0.5) * 0.014,
-        phase: Math.random() * Math.PI * 2,
-        tilt: 0,
-      }));
+    // ---- Animation Loop ----
+    let cameraAngle = 0;
+    const animate = () => {
+      timeRef.current += 0.008;
 
-      rings = Array.from({ length: 6 }, (_, i): Ring => ({
-        x: (0.15 + i * 0.17) * W,
-        y: (0.2 + (i % 3) * 0.3) * H,
-        r: Math.random() * 60 + 20,
-        maxR: Math.random() * 160 + 80,
-        speed: Math.random() * 0.6 + 0.3,
-        opacity: 0.18,
-        phase: (i / 6) * Math.PI * 2,
-      }));
-
-      hexNodes = Array.from({ length: 32 }, (): HexNode => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: Math.random() * 2.5 + 1,
-        phase: Math.random() * Math.PI * 2,
-        brightness: Math.random() * 0.3 + 0.08,
-      }));
-
-      beams = [];
-      for (let i = 0; i < 22; i++) {
-        const a = hexNodes[Math.floor(Math.random() * hexNodes.length)];
-        const b = hexNodes[Math.floor(Math.random() * hexNodes.length)];
-        if (a !== b) beams.push({ a, b, op: Math.random() * 0.09 + 0.02 });
+      // Rotate Earth and clouds
+      if (earthRef.current) {
+        earthRef.current.rotation.y += 0.0015;
+        clouds.rotation.y += 0.0018;
       }
 
-      packets = beams.slice(0, 14).map((beam): Packet => ({
-        beam,
-        t: Math.random(),
-        speed: Math.random() * 0.004 + 0.0015,
-        size: Math.random() * 1.5 + 1,
-      }));
-    }
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    function drawCoin(c: Coin, frame: number) {
-      const { x, y, size, opacity, rot, phase } = c;
-      const glow = Math.sin(phase + frame * 0.022) * 0.45 + 0.55;
-
-      ctx!.save();
-      ctx!.translate(x, y);
-      ctx!.rotate(rot);
-      ctx!.globalAlpha = opacity * glow;
-
-      ctx!.beginPath();
-      ctx!.arc(0, 0, size + 5 * glow, 0, Math.PI * 2);
-      ctx!.strokeStyle = `rgba(253,224,71,${0.35 * glow})`;
-      ctx!.lineWidth = 1;
-      ctx!.stroke();
-
-      ctx!.beginPath();
-      ctx!.arc(0, 0, size * 0.88, 0, Math.PI * 2);
-      ctx!.strokeStyle = `rgba(250,204,21,${0.5 * glow})`;
-      ctx!.lineWidth = 0.7;
-      ctx!.stroke();
-
-      const g = ctx!.createRadialGradient(-size * 0.25, -size * 0.25, size * 0.05, 0, 0, size * 0.78);
-      g.addColorStop(0, "rgba(254,240,138,0.95)");
-      g.addColorStop(0.35, "rgba(250,204,21,0.85)");
-      g.addColorStop(0.75, "rgba(234,179,8,0.75)");
-      g.addColorStop(1, "rgba(154,52,18,0.55)");
-      ctx!.beginPath();
-      ctx!.arc(0, 0, size * 0.78, 0, Math.PI * 2);
-      ctx!.fillStyle = g;
-      ctx!.fill();
-
-      ctx!.beginPath();
-      ctx!.arc(-size * 0.18, -size * 0.22, size * 0.42, Math.PI * 1.1, Math.PI * 1.85);
-      ctx!.strokeStyle = `rgba(255,255,220,${0.45 * glow})`;
-      ctx!.lineWidth = size * 0.09;
-      ctx!.stroke();
-
-      ctx!.fillStyle = `rgba(0,0,0,${0.72 * glow})`;
-      ctx!.font = `900 ${size * 0.82}px Georgia,serif`;
-      ctx!.textAlign = "center";
-      ctx!.textBaseline = "middle";
-      ctx!.fillText("₿", 0, size * 0.04);
-
-      ctx!.restore();
-    }
-
-    function drawNode(nd: HexNode) {
-      nd.phase += 0.018;
-      const pulse = Math.sin(nd.phase) * 0.5 + 0.5;
-      const br = nd.brightness;
-      ctx!.beginPath();
-      ctx!.arc(nd.x, nd.y, nd.r + 5 * pulse, 0, Math.PI * 2);
-      ctx!.fillStyle = `rgba(250,204,21,${br * 0.28 * pulse})`;
-      ctx!.fill();
-      ctx!.beginPath();
-      ctx!.arc(nd.x, nd.y, nd.r, 0, Math.PI * 2);
-      ctx!.fillStyle = `rgba(250,204,21,${br + 0.15 * pulse})`;
-      ctx!.fill();
-    }
-
-    function drawRing(rng: Ring) {
-      rng.phase += 0.012;
-      const t = Math.sin(rng.phase) * 0.5 + 0.5;
-      const r = rng.r + (rng.maxR - rng.r) * t;
-      const op = rng.opacity * (1 - t) * 0.7;
-      ctx!.beginPath();
-      ctx!.arc(rng.x, rng.y, r, 0, Math.PI * 2);
-      ctx!.strokeStyle = `rgba(250,204,21,${op})`;
-      ctx!.lineWidth = 1.2;
-      ctx!.stroke();
-      ctx!.beginPath();
-      ctx!.arc(rng.x, rng.y, r * 0.7, 0, Math.PI * 2);
-      ctx!.strokeStyle = `rgba(34,211,238,${op * 0.5})`;
-      ctx!.lineWidth = 0.6;
-      ctx!.stroke();
-    }
-
-    const GHOSTS = [
-      { rx: 0.07, ry: 0.32, size: 200, op: 0.045, phase: 0 },
-      { rx: 0.86, ry: 0.15, size: 160, op: 0.038, phase: 1.5 },
-      { rx: 0.52, ry: 0.74, size: 220, op: 0.032, phase: 3.0 },
-      { rx: 0.22, ry: 0.72, size: 130, op: 0.028, phase: 4.5 },
-      { rx: 0.75, ry: 0.55, size: 110, op: 0.022, phase: 2.1 },
-    ];
-
-    let frame = 0;
-    let animId: number;
-
-    const tick = () => {
-      frame++;
-      const W = canvas!.width;
-      const H = canvas!.height;
-      ctx!.clearRect(0, 0, W, H);
-
-      GHOSTS.forEach((g) => {
-        const pulse = Math.sin(frame * 0.009 + g.phase) * 0.35 + 0.65;
-        ctx!.save();
-        ctx!.globalAlpha = g.op * pulse;
-        ctx!.font = `900 ${g.size}px Georgia,serif`;
-        ctx!.textAlign = "center";
-        ctx!.textBaseline = "middle";
-        ctx!.fillStyle = "#eab308";
-        ctx!.fillText("₿", g.rx * W, g.ry * H);
-        ctx!.restore();
+      // Animate coins: gentle floating motion and slow rotation
+      coinsRef.current.forEach((coin, idx) => {
+        coin.rotation.y += 0.01;
+        coin.rotation.x = Math.sin(timeRef.current * 0.8 + idx) * 0.2;
+        coin.rotation.z = Math.cos(timeRef.current * 0.5 + idx) * 0.15;
+        // Floating offset: move up/down/left/right slightly
+        const offsetX = Math.sin(timeRef.current * 0.7 + idx) * 0.08;
+        const offsetY = Math.cos(timeRef.current * 0.9 + idx * 0.5) * 0.1;
+        const offsetZ = Math.sin(timeRef.current * 1.1 + idx) * 0.06;
+        coin.position.x += (offsetX - (coin.userData?.offX || 0)) * 0.05;
+        coin.position.y += (offsetY - (coin.userData?.offY || 0)) * 0.05;
+        coin.position.z += (offsetZ - (coin.userData?.offZ || 0)) * 0.05;
+        coin.userData = { offX: offsetX, offY: offsetY, offZ: offsetZ };
       });
 
-      beams.forEach(({ a, b, op }) => {
-        ctx!.beginPath();
-        ctx!.moveTo(a.x, a.y);
-        ctx!.lineTo(a.x, b.y);
-        ctx!.lineTo(b.x, b.y);
-        ctx!.strokeStyle = `rgba(250,204,21,${op})`;
-        ctx!.lineWidth = 0.6;
-        ctx!.stroke();
-      });
+      // Rotate golden light around the scene
+      goldLight.position.x = 3.5 * Math.sin(timeRef.current * 0.2);
+      goldLight.position.z = 4.5 * Math.cos(timeRef.current * 0.3);
 
-      packets.forEach((pkt) => {
-        pkt.t += pkt.speed;
-        if (pkt.t > 1) pkt.t = 0;
-        const { a, b } = pkt.beam;
-        let px: number, py: number;
-        if (pkt.t < 0.5) {
-          px = a.x;
-          py = a.y + (b.y - a.y) * (pkt.t * 2);
-        } else {
-          px = a.x + (b.x - a.x) * ((pkt.t - 0.5) * 2);
-          py = b.y;
-        }
-        ctx!.beginPath();
-        ctx!.arc(px, py, pkt.size, 0, Math.PI * 2);
-        ctx!.fillStyle = "rgba(253,224,71,0.7)";
-        ctx!.fill();
-      });
+      // Smooth camera pan: slowly orbit the camera
+      cameraAngle += 0.001;
+      if (cameraRef.current) {
+        const radius = 11;
+        const camX = Math.sin(cameraAngle) * radius * 0.2;
+        const camZ = Math.cos(cameraAngle * 0.7) * radius * 0.2;
+        cameraRef.current.position.x += (camX - cameraRef.current.position.x) * 0.02;
+        cameraRef.current.position.z += (camZ - cameraRef.current.position.z) * 0.02;
+        cameraRef.current.lookAt(0, 0, 0);
+      }
 
-      hexNodes.forEach((nd) => drawNode(nd));
-      rings.forEach((rng) => drawRing(rng));
+      // Update stars rotation
+      stars.rotation.y += 0.0002;
+      stars.rotation.x += 0.0001;
 
-      coins.forEach((c) => {
-        c.phase += 0.018;
-        c.rot += c.rotV;
-        c.x += c.vx;
-        c.y += c.vy;
-        if (c.y + c.size * 2 < 0) {
-          c.y = H + c.size;
-          c.x = Math.random() * W;
-        }
-        if (c.x < -c.size * 2) c.x = W + c.size;
-        if (c.x > W + c.size * 2) c.x = -c.size;
-        drawCoin(c, frame);
-      });
+      // Render
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
 
-      animId = requestAnimationFrame(tick);
+      requestRef.current = requestAnimationFrame(animate);
     };
 
-    tick();
+    animate();
+
+    // Handle resize
+    const handleResize = () => {
+      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+      rendererRef.current.setSize(width, height);
+    };
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", handleResize);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+      }
+      // Cleanup Three.js resources
+      if (sceneRef.current) {
+        sceneRef.current.traverse((obj: any) => {
+          // Only dispose meshes
+          if ((obj as any).isMesh) {
+            const mesh = obj as any;
+            if (mesh.geometry) mesh.geometry.dispose();
+            const mat = mesh.material as any;
+            if (Array.isArray(mat)) mat.forEach((m: any) => m.dispose());
+            else if (mat) mat.dispose();
+          }
+        });
+      }
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: 1,
-      }}
-    />
-  );
-}
+  return <div ref={containerRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />;
+};
 
-/* ── Styles (with horizontal marquee) ── */
+// ── Styles (updated for 3D scene) ─────────────────────────────────────────
+
 const styles = `
 @keyframes floatUp {
   0% { opacity: 0; transform: translateY(0) scale(0); }
@@ -461,11 +443,6 @@ const styles = `
   80% { opacity: 1; transform: scale(1) rotate(576deg); }
   100% { opacity: 0; transform: scale(0.5) rotate(720deg); }
 }
-/* Horizontal marquee animation */
-@keyframes marqueeScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
 
 .hero-section {
   position: relative;
@@ -477,88 +454,6 @@ const styles = `
   justify-content: center;
   padding: 128px 24px 80px;
   cursor: default;
-}
-.bg-main-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom right, #050816, #081221, #020617);
-}
-.bg-grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
-    linear-gradient(to bottom, #fff 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-.bg-spotlight {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1000px;
-  height: 1000px;
-  transform: translate(-50%, -50%);
-  opacity: 0.2;
-  animation: rotateSpotlight 40s linear infinite;
-}
-.bg-spotlight-inner {
-  position: absolute;
-  inset: 0;
-  background: conic-gradient(from 0deg, transparent, rgba(250,204,21,0.4), transparent);
-  filter: blur(40px);
-}
-.bg-orb1 {
-  position: absolute;
-  top: -80px;
-  left: -80px;
-  width: 450px;
-  height: 450px;
-  border-radius: 50%;
-  background: rgba(234,179,8,0.2);
-  filter: blur(140px);
-  animation: floatOrb1 20s linear infinite;
-}
-.bg-orb2 {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: rgba(6,182,212,0.2);
-  filter: blur(160px);
-  animation: floatOrb2 25s linear infinite;
-}
-.coin-wrapper {
-  position: absolute;
-  pointer-events: none;
-  z-index: 50;
-}
-.coin-glow {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(250,204,21,0.3);
-  filter: blur(16px);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.coin-face {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fde68a, #eab308, #f97316);
-  border: 1px solid #fef3c7;
-  box-shadow: 0 0 10px rgba(250,204,21,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 20px;
-  color: #000;
-  animation: spin 1.5s linear infinite;
 }
 .content-wrapper {
   position: relative;
@@ -700,65 +595,41 @@ const styles = `
 .trust-item span { color: #fff; font-weight: 700; }
 .trust-divider { width: 1px; height: 32px; background: #334155; }
 
-/* Horizontal moving ticker (JioHotstar style) */
-.hero-marquee {
-  width: 100%;
-  overflow: hidden;
-  margin: 32px 0 48px;
-  padding: 12px 0;
-  background: rgba(0,0,0,0.3);
-  border-top: 1px solid rgba(250,204,21,0.2);
-  border-bottom: 1px solid rgba(250,204,21,0.2);
+.coin-wrapper {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
 }
-.marquee-track {
-  display: flex;
-  animation: marqueeScroll 25s linear infinite;
-  gap: 32px;
+.coin-glow {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(250,204,21,0.3);
+  filter: blur(16px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-.marquee-item {
-  flex-shrink: 0;
+.coin-face {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fde68a, #eab308, #f97316);
+  border: 1px solid #fef3c7;
+  box-shadow: 0 0 10px rgba(250,204,21,0.8);
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(250,204,21,0.1);
-  padding: 8px 24px;
-  border-radius: 40px;
-  border: 1px solid rgba(250,204,21,0.3);
-  backdrop-filter: blur(8px);
-  font-weight: 600;
-  color: #fde68a;
-  transition: all 0.3s ease;
-}
-.marquee-item:hover {
-  transform: scale(1.05);
-  background: rgba(250,204,21,0.2);
-  border-color: #facc15;
-  box-shadow: 0 0 15px rgba(250,204,21,0.3);
-}
-.marquee-icon {
-  font-size: 1.2rem;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 20px;
+  color: #000;
+  animation: spin 1.5s linear infinite;
 }
 
 @media (max-width: 768px) {
   .hero-section {
     padding: 80px 16px 56px;
-  }
-  .bg-spotlight {
-    width: 700px;
-    height: 700px;
-  }
-  .bg-orb1 {
-    width: 280px;
-    height: 280px;
-    top: -60px;
-    left: -40px;
-  }
-  .bg-orb2 {
-    width: 320px;
-    height: 320px;
   }
   .coin-glow {
     width: 42px;
@@ -813,18 +684,10 @@ const styles = `
   .trust-divider {
     height: 24px;
   }
-  .hero-marquee {
-    margin: 24px 0 32px;
-  }
-  .marquee-item {
-    padding: 6px 16px;
-    font-size: 0.85rem;
-    gap: 8px;
-  }
 }
 `;
 
-// ── Hero Component ───────────────────────────────────────────────────────
+// ── Hero Component (with 3D scene) ──────────────────────────────────────
 
 export default function Hero() {
   const [coins, setCoins] = useState<HeroCoin[]>([]);
@@ -864,17 +727,6 @@ export default function Hero() {
     }, 2500);
   };
 
-  // Data for horizontal marquee
-  const marqueeItems = [
-    { text: "🚀 No Real Money Required", icon: "🚀" },
-    { text: "💰 No Deposit Needed", icon: "💰" },
-    { text: "⚡ Instant MT5 Access", icon: "⚡" },
-    { text: "🏆 Win $2,000 Grand Prize", icon: "🏆" },
-    { text: "📊 Trade with $10,000 Virtual Funds", icon: "📊" },
-    { text: "🔥 Real Cash Rewards", icon: "🔥" },
-  ];
-  const duplicatedMarquee = [...marqueeItems, ...marqueeItems];
-
   return (
     <>
       <style>{styles}</style>
@@ -883,33 +735,13 @@ export default function Hero() {
         className="hero-section"
         onMouseMove={handleMouseMove}
       >
-        {/* Background layers */}
-        <div className="bg-main-gradient" />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `url('https://images.unsplash.com/photo-1639133893916-a711d8af8c0a?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.15,
-            zIndex: 0,
-          }}
-        />
-        <div className="bg-grid" />
-        <div className="bg-spotlight">
-          <div className="bg-spotlight-inner" />
-        </div>
-        <div className="bg-orb1" />
-        <div className="bg-orb2" />
+        {/* 3D Cinematic Scene (Earth + floating Gold Bitcoins) */}
+        <ThreeScene />
 
-        {/* Bitcoin animated canvas */}
-        <BitcoinCanvas />
-
-        {/* Golden Cursor Trail */}
+        {/* Golden Cursor Trail (2D overlay) */}
         <TrailCanvas containerRef={sectionRef} />
 
-        {/* Floating particles */}
+        {/* Floating particles (2D) */}
         {particles.map((p) => (
           <div
             key={p.id}
@@ -927,7 +759,7 @@ export default function Hero() {
           />
         ))}
 
-        {/* Coins on hover */}
+        {/* Coins on hover (2D burst) */}
         {coins.map((coin) => (
           <div
             key={coin.id}
@@ -945,7 +777,7 @@ export default function Hero() {
           </div>
         ))}
 
-        {/* Content */}
+        {/* UI Content (unchanged) */}
         <div className="content-wrapper">
           <div className="badge">
             <Trophy color="#facc15" size={20} />
@@ -959,20 +791,6 @@ export default function Hero() {
             Trade with <strong>$10,000 virtual funds</strong>, compete for real
             cash-equivalent rewards, and prove you belong among the top traders.
           </p>
-
-          {/* HORIZONTAL MOVING COMPONENT (JioHotstar style) */}
-          <div className="hero-marquee">
-            <div className="marquee-track">
-              {duplicatedMarquee.map((item, idx) => (
-                <div key={idx} className="marquee-item">
-                  <span className="marquee-icon">{item.icon}</span>
-                  <span>{item.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Stats Grid (unchanged) */}
           <div className="stats-grid">
             <div className="stat-card stat-card-yellow">
               <Trophy color="#facc15" size={40} style={{ margin: "0 auto" }} />
@@ -990,7 +808,6 @@ export default function Hero() {
               <p className="stat-label">Win Live-Account Rewards</p>
             </div>
           </div>
-
           <p className="sub-desc">
             Whether you're a day trader, scalper, or swing specialist — your
             skills decide your rank.
