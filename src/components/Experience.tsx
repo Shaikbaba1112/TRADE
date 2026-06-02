@@ -75,8 +75,8 @@ const Experience = () => {
 
       {/* Background Glow & Grid */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-yellow-500/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[150px]" />
+        <div className="absolute top-0 left-0 w-72 h-72 sm:w-[500px] sm:h-[500px] bg-yellow-500/10 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 sm:w-[500px] sm:h-[500px] bg-cyan-500/10 rounded-full blur-[150px]" />
         <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:60px_60px]" />
       </div>
 

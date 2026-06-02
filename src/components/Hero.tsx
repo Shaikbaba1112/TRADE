@@ -694,6 +694,96 @@ const styles = `
 .trust-item { display: flex; align-items: center; gap: 8px; }
 .trust-item span { color: #fff; font-weight: 700; }
 .trust-divider { width: 1px; height: 32px; background: #334155; }
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 16px 56px;
+  }
+
+  .bg-spotlight {
+    width: 700px;
+    height: 700px;
+  }
+
+  .bg-orb1 {
+    width: 280px;
+    height: 280px;
+    top: -60px;
+    left: -40px;
+  }
+
+  .bg-orb2 {
+    width: 320px;
+    height: 320px;
+  }
+
+  .coin-glow {
+    width: 42px;
+    height: 42px;
+  }
+
+  .coin-face {
+    font-size: 16px;
+  }
+
+  .content-wrapper {
+    padding: 0 8px;
+  }
+
+  .description {
+    font-size: 1rem;
+    margin-bottom: 32px;
+  }
+
+  .stats-grid {
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .stat-card {
+    padding: 24px;
+  }
+
+  .stat-number {
+    font-size: 2.3rem;
+  }
+
+  .sub-desc {
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+
+  .no-risk-text {
+    font-size: 1.1rem;
+    margin-bottom: 32px;
+  }
+
+  .cta-btn {
+    width: 100%;
+    padding: 16px 28px;
+    font-size: 1rem;
+    margin-bottom: 40px;
+  }
+
+  .traders-row {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .trader-avatar {
+    width: 52px;
+    height: 52px;
+    margin-left: -12px;
+  }
+
+  .trust-row {
+    gap: 20px;
+  }
+
+  .trust-divider {
+    height: 24px;
+  }
+}
 `;
 
 // ── Hero ───────────────────────────────────────────────────────────────────

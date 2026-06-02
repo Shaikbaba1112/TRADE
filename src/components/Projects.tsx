@@ -282,7 +282,7 @@ const Projects = () => {
                 <motion.img
                   src={project.image}
                   alt={project.title}
-                  className="w-full h-[420px] object-cover"
+                  className="w-full h-64 sm:h-[420px] object-cover"
                   whileHover={{
                     scale: 1.08,
                   }}

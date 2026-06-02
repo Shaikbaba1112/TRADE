@@ -17,8 +17,8 @@ const SignIn = () => {
       <div className="absolute inset-0 bg-black/75" />
 
       {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-yellow-500/20 rounded-full blur-[150px]" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-orange-500/20 rounded-full blur-[150px]" />
+      <div className="absolute top-0 left-0 w-72 h-72 sm:w-[500px] sm:h-[500px] bg-yellow-500/20 rounded-full blur-[150px]" />
+      <div className="absolute bottom-0 right-0 w-72 h-72 sm:w-[500px] sm:h-[500px] bg-orange-500/20 rounded-full blur-[150px]" />
 
       {/* Animated Grid */}
       <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#facc15_1px,transparent_1px),linear-gradient(to_bottom,#facc15_1px,transparent_1px)] bg-[size:60px_60px]" />

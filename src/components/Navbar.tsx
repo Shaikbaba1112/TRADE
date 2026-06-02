@@ -19,7 +19,7 @@ const Navbar = () => {
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
-        className="absolute left-5 top-2 text-2xl"
+        className="hidden sm:block absolute left-4 top-3 text-2xl"
       >
         ₿
       </motion.div>
@@ -27,12 +27,12 @@ const Navbar = () => {
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 2.5, repeat: Infinity }}
-        className="absolute right-5 top-2 text-2xl"
+        className="hidden sm:block absolute right-4 top-3 text-2xl"
       >
         ₿
       </motion.div>
 
-      <div className="flex items-center justify-center gap-4 py-3 relative z-10">
+      <div className="flex flex-wrap items-center justify-center gap-3 py-3 px-4 sm:px-6 relative z-10">
 
         {/* LIVE Badge */}
         <motion.div
