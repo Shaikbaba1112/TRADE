@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Trophy, Star, ShieldCheck, DollarSign, TrendingUp } from "lucide-react";
+import { Trophy, Star, ShieldCheck} from "lucide-react";
 import * as THREE from "three";
 
 // ── Types (for existing 2D effects) ─────────────────────────────────────
@@ -119,15 +119,16 @@ function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLEleme
   );
 }
 
-// ── 3D Scene (Three.js) ────────────────────────────────────────────────
+// ── 3D Scene (Three.js) – Fixed Camera, Smooth Earth Rotation ───────────
 
 const ThreeScene = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<any | null>(null);
-  const cameraRef = useRef<any | null>(null);
-  const rendererRef = useRef<any | null>(null);
-  const earthRef = useRef<any | null>(null);
-  const coinsRef = useRef<any[]>([]);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const earthRef = useRef<THREE.Mesh | null>(null);
+  const cloudsRef = useRef<THREE.Mesh | null>(null);
+  const coinsRef = useRef<THREE.Group[]>([]);
   const requestRef = useRef<number | null>(null);
   const timeRef = useRef(0);
 
@@ -140,14 +141,15 @@ const ThreeScene = () => {
     scene.fog = new THREE.FogExp2(0x050816, 0.0005);
     sceneRef.current = scene;
 
-    // Camera: perspective, positioned to see Earth and floating coins
+    // Camera: fixed position (no zoom, no orbit)
     const camera = new THREE.PerspectiveCamera(
       45,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
       1000
     );
-    camera.position.set(0, 2, 12);
+    camera.position.set(0, 1.5, 12);
+    camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
     // Renderer with transparency for overlay
@@ -157,34 +159,28 @@ const ThreeScene = () => {
       containerRef.current.clientHeight
     );
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true; // enable shadows for coins
+    renderer.shadowMap.enabled = true;
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // ---- Lighting (cinematic, high-end) ----
-    // Ambient light
+    // Lighting
     const ambientLight = new THREE.AmbientLight(0x404060);
     scene.add(ambientLight);
-    // Main directional light (sun)
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.set(5, 10, 7);
     dirLight.castShadow = true;
-    dirLight.receiveShadow = false;
     scene.add(dirLight);
-    // Fill light from below
     const fillLight = new THREE.PointLight(0x445566, 0.5);
     fillLight.position.set(0, -3, 0);
     scene.add(fillLight);
-    // Back rim light to highlight coins
     const rimLight = new THREE.PointLight(0xffaa33, 0.8);
     rimLight.position.set(-2, 1, -4);
     scene.add(rimLight);
-    // Dynamic golden point light that rotates around the scene
     const goldLight = new THREE.PointLight(0xfacc15, 0.6);
     goldLight.position.set(3, 2, 4);
     scene.add(goldLight);
 
-    // Stars background (particle system)
+    // Stars background
     const starGeometry = new THREE.BufferGeometry();
     const starCount = 2000;
     const starPositions = new Float32Array(starCount * 3);
@@ -198,8 +194,7 @@ const ThreeScene = () => {
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // ---- Earth ----
-    // High-res Earth texture (NASA visible earth)
+    // Earth textures
     const textureLoader = new THREE.TextureLoader();
     const earthMap = textureLoader.load("https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg");
     const earthSpecularMap = textureLoader.load("https://threejs.org/examples/textures/planets/earth_specular_2048.jpg");
@@ -218,7 +213,6 @@ const ThreeScene = () => {
     scene.add(earth);
     earthRef.current = earth;
 
-    // Clouds layer
     const cloudGeometry = new THREE.SphereGeometry(2.22, 128, 128);
     const cloudMaterial = new THREE.MeshPhongMaterial({
       map: cloudMap,
@@ -228,13 +222,12 @@ const ThreeScene = () => {
     });
     const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
     scene.add(clouds);
+    cloudsRef.current = clouds;
 
-    // ---- Floating Gold Bitcoin Coins (3D) ----
-    // Function to create a single physical-looking Bitcoin coin
+    // Floating Bitcoin coins (3D)
     const createBitcoinCoin = (x: number, y: number, z: number) => {
       const group = new THREE.Group();
 
-      // Coin body (cylinder with gold material)
       const cylinderGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.08, 64);
       const goldMaterial = new THREE.MeshStandardMaterial({
         color: 0xfacc15,
@@ -245,17 +238,14 @@ const ThreeScene = () => {
       });
       const body = new THREE.Mesh(cylinderGeo, goldMaterial);
       body.castShadow = true;
-      body.receiveShadow = false;
       group.add(body);
 
-      // Edge ring (torrus for detail)
       const edgeGeo = new THREE.TorusGeometry(0.36, 0.03, 32, 100);
       const edgeMat = new THREE.MeshStandardMaterial({ color: 0xffdd77, metalness: 0.9, roughness: 0.2 });
       const ring = new THREE.Mesh(edgeGeo, edgeMat);
       ring.rotation.x = Math.PI / 2;
       group.add(ring);
 
-      // Bitcoin symbol on both sides: create a canvas texture with "₿"
       const canvas = document.createElement("canvas");
       canvas.width = 512;
       canvas.height = 512;
@@ -281,43 +271,40 @@ const ThreeScene = () => {
       group.add(frontFace);
       group.add(backFace);
 
-      // Add a subtle glow using point light attached? Not needed; environment lights will do.
       group.position.set(x, y, z);
       return group;
     };
 
-    // Create 25 coins floating in a spherical shell around the scene
     const coinCount = 25;
     for (let i = 0; i < coinCount; i++) {
-      // Random positions within a sphere radius 4 to 7, avoiding Earth intersection
       const radius = 4 + Math.random() * 3;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       const x = Math.sin(phi) * Math.cos(theta) * radius;
-      const y = Math.sin(phi) * Math.sin(theta) * radius * 0.8; // flatten vertical spread
+      const y = Math.sin(phi) * Math.sin(theta) * radius * 0.8;
       const z = Math.cos(phi) * radius;
       const coin = createBitcoinCoin(x, y, z);
       scene.add(coin);
       coinsRef.current.push(coin);
     }
 
-    // ---- Animation Loop ----
-    let cameraAngle = 0;
+    // Animation loop (no camera movement, only Earth rotation and coin floating)
     const animate = () => {
       timeRef.current += 0.008;
 
-      // Rotate Earth and clouds
+      // Rotate Earth and clouds smoothly
       if (earthRef.current) {
-        earthRef.current.rotation.y += 0.0015;
-        clouds.rotation.y += 0.0018;
+        earthRef.current.rotation.y += 0.002; // smooth rotation speed
+      }
+      if (cloudsRef.current) {
+        cloudsRef.current.rotation.y += 0.0022;
       }
 
-      // Animate coins: gentle floating motion and slow rotation
+      // Animate coins: floating motion and self-rotation
       coinsRef.current.forEach((coin, idx) => {
         coin.rotation.y += 0.01;
         coin.rotation.x = Math.sin(timeRef.current * 0.8 + idx) * 0.2;
         coin.rotation.z = Math.cos(timeRef.current * 0.5 + idx) * 0.15;
-        // Floating offset: move up/down/left/right slightly
         const offsetX = Math.sin(timeRef.current * 0.7 + idx) * 0.08;
         const offsetY = Math.cos(timeRef.current * 0.9 + idx * 0.5) * 0.1;
         const offsetZ = Math.sin(timeRef.current * 1.1 + idx) * 0.06;
@@ -327,22 +314,11 @@ const ThreeScene = () => {
         coin.userData = { offX: offsetX, offY: offsetY, offZ: offsetZ };
       });
 
-      // Rotate golden light around the scene
+      // Rotate golden light slowly
       goldLight.position.x = 3.5 * Math.sin(timeRef.current * 0.2);
       goldLight.position.z = 4.5 * Math.cos(timeRef.current * 0.3);
 
-      // Smooth camera pan: slowly orbit the camera
-      cameraAngle += 0.001;
-      if (cameraRef.current) {
-        const radius = 11;
-        const camX = Math.sin(cameraAngle) * radius * 0.2;
-        const camZ = Math.cos(cameraAngle * 0.7) * radius * 0.2;
-        cameraRef.current.position.x += (camX - cameraRef.current.position.x) * 0.02;
-        cameraRef.current.position.z += (camZ - cameraRef.current.position.z) * 0.02;
-        cameraRef.current.lookAt(0, 0, 0);
-      }
-
-      // Update stars rotation
+      // Rotate stars very slowly
       stars.rotation.y += 0.0002;
       stars.rotation.x += 0.0001;
 
@@ -356,7 +332,7 @@ const ThreeScene = () => {
 
     animate();
 
-    // Handle resize
+    // Handle resize (mobile responsive)
     const handleResize = () => {
       if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
       const width = containerRef.current.clientWidth;
@@ -373,16 +349,15 @@ const ThreeScene = () => {
       if (rendererRef.current && containerRef.current) {
         containerRef.current.removeChild(rendererRef.current.domElement);
       }
-      // Cleanup Three.js resources
       if (sceneRef.current) {
         sceneRef.current.traverse((obj: any) => {
-          // Only dispose meshes
           if ((obj as any).isMesh) {
             const mesh = obj as any;
             if (mesh.geometry) mesh.geometry.dispose();
-            const mat = mesh.material as any;
-            if (Array.isArray(mat)) mat.forEach((m: any) => m.dispose());
-            else if (mat) mat.dispose();
+            if (mesh.material) {
+              if (Array.isArray(mesh.material)) mesh.material.forEach((m: any) => m.dispose());
+              else mesh.material.dispose();
+            }
           }
         });
       }
@@ -392,7 +367,7 @@ const ThreeScene = () => {
   return <div ref={containerRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />;
 };
 
-// ── Styles (updated for 3D scene) ─────────────────────────────────────────
+// ── Styles (unchanged, fully responsive) ────────────────────────────────
 
 const styles = `
 @keyframes floatUp {
@@ -791,23 +766,6 @@ export default function Hero() {
             Trade with <strong>$10,000 virtual funds</strong>, compete for real
             cash-equivalent rewards, and prove you belong among the top traders.
           </p>
-          <div className="stats-grid">
-            <div className="stat-card stat-card-yellow">
-              <Trophy color="#facc15" size={40} style={{ margin: "0 auto" }} />
-              <div className="stat-number">$2,000</div>
-              <p className="stat-label">Grand Prize</p>
-            </div>
-            <div className="stat-card stat-card-cyan">
-              <DollarSign color="#22d3ee" size={40} style={{ margin: "0 auto" }} />
-              <div className="stat-number">$10,000</div>
-              <p className="stat-label">Demo Balance</p>
-            </div>
-            <div className="stat-card stat-card-green">
-              <TrendingUp color="#4ade80" size={40} style={{ margin: "0 auto" }} />
-              <div className="stat-number">Top 20</div>
-              <p className="stat-label">Win Live-Account Rewards</p>
-            </div>
-          </div>
           <p className="sub-desc">
             Whether you're a day trader, scalper, or swing specialist — your
             skills decide your rank.
