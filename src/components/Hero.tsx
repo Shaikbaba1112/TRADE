@@ -1,106 +1,166 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  Trophy,
-  DollarSign,
-  TrendingUp,
-  Star,
-  ShieldCheck,
-  Clock,
-  Sparkles,
-  ArrowUpRight,
-} from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Trophy, DollarSign, TrendingUp, Star, ShieldCheck } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
+interface TrailDot {
+  x: number;
+  y: number;
+  life: number;
+  size: number;
+  isRing?: boolean;
 }
 
-// ── Countdown Timer Component ─────────────────────────────────────────────
+interface HexNode {
+  x: number;
+  y: number;
+  r: number;
+  phase: number;
+  brightness: number;
+}
 
-const CountdownTimer = ({ targetDate }: { targetDate: Date }) => {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+interface Beam {
+  a: HexNode;
+  b: HexNode;
+  op: number;
+}
+
+interface Packet {
+  beam: Beam;
+  t: number;
+  speed: number;
+  size: number;
+}
+
+interface Coin {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  vy: number;
+  vx: number;
+  rot: number;
+  rotV: number;
+  phase: number;
+  tilt: number;
+}
+
+interface Ring {
+  x: number;
+  y: number;
+  r: number;
+  maxR: number;
+  speed: number;
+  opacity: number;
+  phase: number;
+}
+
+interface HeroCoin {
+  id: number;
+  x: number;
+  y: number;
+}
+
+// ── TrailCanvas ────────────────────────────────────────────────────────────
+
+function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLElement | null> }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef<{ x: number; y: number }>({ x: -100, y: -100 });
+  const dotsRef = useRef<TrailDot[]>([]);
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const difference = targetDate.getTime() - now.getTime();
+    const section = containerRef.current;
+    if (!section) return;
 
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
+    const handleMove = (e: MouseEvent) => {
+      const rect = section.getBoundingClientRect();
+      mouseRef.current.x = e.clientX - rect.left;
+      mouseRef.current.y = e.clientY - rect.top;
+      dotsRef.current.push({
+        x: mouseRef.current.x,
+        y: mouseRef.current.y,
+        life: 1,
+        size: 3 + Math.random() * 4,
+      });
     };
+    section.addEventListener("mousemove", handleMove);
+    return () => section.removeEventListener("mousemove", handleMove);
+  }, [containerRef]);
 
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(timer);
-  }, [targetDate]);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    canvas.width = W;
+    canvas.height = H;
+
+    let animId: number;
+
+    const tick = () => {
+      ctx.clearRect(0, 0, W, H);
+      const dots = dotsRef.current;
+
+      for (let i = dots.length - 1; i >= 0; i--) {
+        const d = dots[i];
+        d.life -= 0.02;
+        if (d.life <= 0) {
+          dots.splice(i, 1);
+          continue;
+        }
+        const dx = mouseRef.current.x - d.x;
+        const dy = mouseRef.current.y - d.y;
+        d.x += dx * 0.08;
+        d.y += dy * 0.08;
+
+        const alpha = d.life * 0.7;
+        const radius = d.size * d.life;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(253,224,71,${alpha})`;
+        ctx.shadowColor = "#facc15";
+        ctx.shadowBlur = 10 * d.life;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      if (Math.random() < 0.05 && mouseRef.current.x > 0) {
+        dots.push({
+          x: mouseRef.current.x,
+          y: mouseRef.current.y,
+          life: 1,
+          size: 20 + Math.random() * 20,
+          isRing: true,
+        });
+      }
+
+      animId = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(animId);
+  }, []);
 
   return (
-    <div className="flex justify-center gap-3 sm:gap-5 md:gap-6 mb-8 md:mb-10">
-      {Object.entries(timeLeft).map(([unit, value]) => (
-        <div
-          key={unit}
-          className="flex flex-col items-center bg-black/40 backdrop-blur-md rounded-2xl px-3 py-2 sm:px-5 sm:py-3 min-w-[60px] sm:min-w-[80px] border border-gold/20"
-        >
-          <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-gold">
-            {value.toString().padStart(2, "0")}
-          </span>
-          <span className="text-[10px] sm:text-xs uppercase tracking-wider text-gray-400">
-            {unit}
-          </span>
-        </div>
-      ))}
-    </div>
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 5,
+      }}
+    />
   );
-};
+}
 
-// ── Horizontal Ticker Component ──────────────────────────────────────────
+// ── BitcoinCanvas ──────────────────────────────────────────────────────────
 
-const HorizontalTicker = () => {
-  const tickerItems = [
-    { text: "🚀 No Real Money Required" },
-    { text: "💰 No Deposit Needed" },
-    { text: "⚡ Instant MT5 Access" },
-    { text: "🏆 Win $2,000 Grand Prize" },
-    { text: "📊 Trade with $10,000 Virtual Funds" },
-  ];
-
-  return (
-    <div className="w-full overflow-hidden bg-gold/5 border-y border-gold/20 py-2 sm:py-3 mb-8 md:mb-12">
-      <div className="flex animate-scroll whitespace-nowrap">
-        {[...tickerItems, ...tickerItems].map((item, idx) => (
-          <div
-            key={idx}
-            className="flex items-center gap-2 mx-4 sm:mx-6 text-gold-light text-sm sm:text-base font-medium"
-          >
-            <span>{item.text}</span>
-            <Sparkles size={14} className="text-gold" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ── Floating Particles Background ────────────────────────────────────────
-
-const FloatingParticles = () => {
+function BitcoinCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -109,297 +169,812 @@ const FloatingParticles = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let particles: Array<{
-      x: number;
-      y: number;
-      radius: number;
-      alpha: number;
-      speedX: number;
-      speedY: number;
-    }> = [];
+    let coins: Coin[] = [];
+    let rings: Ring[] = [];
+    let hexNodes: HexNode[] = [];
+    let beams: Beam[] = [];
+    let packets: Packet[] = [];
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
-      initParticles();
+      initAll();
     };
 
-    const initParticles = () => {
-      const particleCount = 80;
-      particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 2 + 1,
-          alpha: Math.random() * 0.3 + 0.1,
-          speedX: (Math.random() - 0.5) * 0.3,
-          speedY: (Math.random() - 0.5) * 0.2,
-        });
+    function initAll() {
+      const W = canvas!.width;
+      const H = canvas!.height;
+
+      coins = Array.from({ length: 18 }, (_, i): Coin => ({
+        x: (i / 18) * W + Math.random() * 80 - 40,
+        y: Math.random() * H,
+        size: Math.random() * 38 + 20,
+        opacity: Math.random() * 0.22 + 0.06,
+        vy: -(Math.random() * 0.3 + 0.1),
+        vx: (Math.random() - 0.5) * 0.25,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.014,
+        phase: Math.random() * Math.PI * 2,
+        tilt: 0,
+      }));
+
+      rings = Array.from({ length: 6 }, (_, i): Ring => ({
+        x: (0.15 + i * 0.17) * W,
+        y: (0.2 + (i % 3) * 0.3) * H,
+        r: Math.random() * 60 + 20,
+        maxR: Math.random() * 160 + 80,
+        speed: Math.random() * 0.6 + 0.3,
+        opacity: 0.18,
+        phase: (i / 6) * Math.PI * 2,
+      }));
+
+      hexNodes = Array.from({ length: 32 }, (): HexNode => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 2.5 + 1,
+        phase: Math.random() * Math.PI * 2,
+        brightness: Math.random() * 0.3 + 0.08,
+      }));
+
+      beams = [];
+      for (let i = 0; i < 22; i++) {
+        const a = hexNodes[Math.floor(Math.random() * hexNodes.length)];
+        const b = hexNodes[Math.floor(Math.random() * hexNodes.length)];
+        if (a !== b) beams.push({ a, b, op: Math.random() * 0.09 + 0.02 });
       }
-    };
 
-    const animate = () => {
-      if (!ctx || !canvas) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((p) => {
-        p.x += p.speedX;
-        p.y += p.speedY;
-
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(250, 204, 21, ${p.alpha})`;
-        ctx.fill();
-      });
-
-      requestAnimationFrame(animate);
-    };
+      packets = beams.slice(0, 14).map((beam): Packet => ({
+        beam,
+        t: Math.random(),
+        speed: Math.random() * 0.004 + 0.0015,
+        size: Math.random() * 1.5 + 1,
+      }));
+    }
 
     resize();
     window.addEventListener("resize", resize);
-    animate();
 
-    return () => window.removeEventListener("resize", resize);
+    function drawCoin(c: Coin, frame: number) {
+      const { x, y, size, opacity, rot, phase } = c;
+      const glow = Math.sin(phase + frame * 0.022) * 0.45 + 0.55;
+
+      ctx!.save();
+      ctx!.translate(x, y);
+      ctx!.rotate(rot);
+      ctx!.globalAlpha = opacity * glow;
+
+      ctx!.beginPath();
+      ctx!.arc(0, 0, size + 5 * glow, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(253,224,71,${0.35 * glow})`;
+      ctx!.lineWidth = 1;
+      ctx!.stroke();
+
+      ctx!.beginPath();
+      ctx!.arc(0, 0, size * 0.88, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(250,204,21,${0.5 * glow})`;
+      ctx!.lineWidth = 0.7;
+      ctx!.stroke();
+
+      const g = ctx!.createRadialGradient(-size * 0.25, -size * 0.25, size * 0.05, 0, 0, size * 0.78);
+      g.addColorStop(0, "rgba(254,240,138,0.95)");
+      g.addColorStop(0.35, "rgba(250,204,21,0.85)");
+      g.addColorStop(0.75, "rgba(234,179,8,0.75)");
+      g.addColorStop(1, "rgba(154,52,18,0.55)");
+      ctx!.beginPath();
+      ctx!.arc(0, 0, size * 0.78, 0, Math.PI * 2);
+      ctx!.fillStyle = g;
+      ctx!.fill();
+
+      ctx!.beginPath();
+      ctx!.arc(-size * 0.18, -size * 0.22, size * 0.42, Math.PI * 1.1, Math.PI * 1.85);
+      ctx!.strokeStyle = `rgba(255,255,220,${0.45 * glow})`;
+      ctx!.lineWidth = size * 0.09;
+      ctx!.stroke();
+
+      ctx!.fillStyle = `rgba(0,0,0,${0.72 * glow})`;
+      ctx!.font = `900 ${size * 0.82}px Georgia,serif`;
+      ctx!.textAlign = "center";
+      ctx!.textBaseline = "middle";
+      ctx!.fillText("₿", 0, size * 0.04);
+
+      ctx!.restore();
+    }
+
+    function drawNode(nd: HexNode) {
+      nd.phase += 0.018;
+      const pulse = Math.sin(nd.phase) * 0.5 + 0.5;
+      const br = nd.brightness;
+      ctx!.beginPath();
+      ctx!.arc(nd.x, nd.y, nd.r + 5 * pulse, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(250,204,21,${br * 0.28 * pulse})`;
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.arc(nd.x, nd.y, nd.r, 0, Math.PI * 2);
+      ctx!.fillStyle = `rgba(250,204,21,${br + 0.15 * pulse})`;
+      ctx!.fill();
+    }
+
+    function drawRing(rng: Ring) {
+      rng.phase += 0.012;
+      const t = Math.sin(rng.phase) * 0.5 + 0.5;
+      const r = rng.r + (rng.maxR - rng.r) * t;
+      const op = rng.opacity * (1 - t) * 0.7;
+      ctx!.beginPath();
+      ctx!.arc(rng.x, rng.y, r, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(250,204,21,${op})`;
+      ctx!.lineWidth = 1.2;
+      ctx!.stroke();
+      ctx!.beginPath();
+      ctx!.arc(rng.x, rng.y, r * 0.7, 0, Math.PI * 2);
+      ctx!.strokeStyle = `rgba(34,211,238,${op * 0.5})`;
+      ctx!.lineWidth = 0.6;
+      ctx!.stroke();
+    }
+
+    const GHOSTS = [
+      { rx: 0.07, ry: 0.32, size: 200, op: 0.045, phase: 0 },
+      { rx: 0.86, ry: 0.15, size: 160, op: 0.038, phase: 1.5 },
+      { rx: 0.52, ry: 0.74, size: 220, op: 0.032, phase: 3.0 },
+      { rx: 0.22, ry: 0.72, size: 130, op: 0.028, phase: 4.5 },
+      { rx: 0.75, ry: 0.55, size: 110, op: 0.022, phase: 2.1 },
+    ];
+
+    let frame = 0;
+    let animId: number;
+
+    const tick = () => {
+      frame++;
+      const W = canvas!.width;
+      const H = canvas!.height;
+      ctx!.clearRect(0, 0, W, H);
+
+      GHOSTS.forEach((g) => {
+        const pulse = Math.sin(frame * 0.009 + g.phase) * 0.35 + 0.65;
+        ctx!.save();
+        ctx!.globalAlpha = g.op * pulse;
+        ctx!.font = `900 ${g.size}px Georgia,serif`;
+        ctx!.textAlign = "center";
+        ctx!.textBaseline = "middle";
+        ctx!.fillStyle = "#eab308";
+        ctx!.fillText("₿", g.rx * W, g.ry * H);
+        ctx!.restore();
+      });
+
+      beams.forEach(({ a, b, op }) => {
+        ctx!.beginPath();
+        ctx!.moveTo(a.x, a.y);
+        ctx!.lineTo(a.x, b.y);
+        ctx!.lineTo(b.x, b.y);
+        ctx!.strokeStyle = `rgba(250,204,21,${op})`;
+        ctx!.lineWidth = 0.6;
+        ctx!.stroke();
+      });
+
+      packets.forEach((pkt) => {
+        pkt.t += pkt.speed;
+        if (pkt.t > 1) pkt.t = 0;
+        const { a, b } = pkt.beam;
+        let px: number, py: number;
+        if (pkt.t < 0.5) {
+          px = a.x;
+          py = a.y + (b.y - a.y) * (pkt.t * 2);
+        } else {
+          px = a.x + (b.x - a.x) * ((pkt.t - 0.5) * 2);
+          py = b.y;
+        }
+        ctx!.beginPath();
+        ctx!.arc(px, py, pkt.size, 0, Math.PI * 2);
+        ctx!.fillStyle = "rgba(253,224,71,0.7)";
+        ctx!.fill();
+      });
+
+      hexNodes.forEach((nd) => drawNode(nd));
+      rings.forEach((rng) => drawRing(rng));
+
+      coins.forEach((c) => {
+        c.phase += 0.018;
+        c.rot += c.rotV;
+        c.x += c.vx;
+        c.y += c.vy;
+        if (c.y + c.size * 2 < 0) {
+          c.y = H + c.size;
+          c.x = Math.random() * W;
+        }
+        if (c.x < -c.size * 2) c.x = W + c.size;
+        if (c.x > W + c.size * 2) c.x = -c.size;
+        drawCoin(c, frame);
+      });
+
+      animId = requestAnimationFrame(tick);
+    };
+
+    tick();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none z-0"
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 1,
+      }}
     />
   );
-};
+}
 
-// ── Main Hero Component ───────────────────────────────────────────────────
+/* ── Styles ── */
+const styles = `
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(0) scale(0); }
+  20% { opacity: 1; transform: translateY(-60px) scale(1.3); }
+  80% { opacity: 1; transform: translateY(-200px) scale(1); }
+  100% { opacity: 0; transform: translateY(-250px) scale(0.5); }
+}
+@keyframes spin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+@keyframes rotateSpotlight {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes floatOrb1 {
+  0%,100% { transform: translate(0, 0); }
+  33% { transform: translate(100px, -80px); }
+  66% { transform: translate(-50px, 50px); }
+}
+@keyframes floatOrb2 {
+  0%,100% { transform: translate(0, 0); }
+  33% { transform: translate(-120px, 80px); }
+  66% { transform: translate(80px, -50px); }
+}
+@keyframes floatContent {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes particleRise {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; transform: translateY(-700px); }
+}
+@keyframes pulseText {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 150%; }
+}
+@keyframes coinFloat {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  20% { opacity: 1; transform: scale(1.3) rotate(144deg); }
+  80% { opacity: 1; transform: scale(1) rotate(576deg); }
+  100% { opacity: 0; transform: scale(0.5) rotate(720deg); }
+}
+
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #050816;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 128px 24px 80px;
+  cursor: default;
+}
+.bg-main-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, #050816, #081221, #020617);
+}
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.bg-spotlight {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1000px;
+  height: 1000px;
+  transform: translate(-50%, -50%);
+  opacity: 0.2;
+  animation: rotateSpotlight 40s linear infinite;
+}
+.bg-spotlight-inner {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, transparent, rgba(250,204,21,0.4), transparent);
+  filter: blur(40px);
+}
+.bg-orb1 {
+  position: absolute;
+  top: -80px;
+  left: -80px;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  background: rgba(234,179,8,0.2);
+  filter: blur(140px);
+  animation: floatOrb1 20s linear infinite;
+}
+.bg-orb2 {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: rgba(6,182,212,0.2);
+  filter: blur(160px);
+  animation: floatOrb2 25s linear infinite;
+}
+.coin-wrapper {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+}
+.coin-glow {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(250,204,21,0.3);
+  filter: blur(16px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.coin-face {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fde68a, #eab308, #f97316);
+  border: 1px solid #fef3c7;
+  box-shadow: 0 0 10px rgba(250,204,21,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 20px;
+  color: #000;
+  animation: spin 1.5s linear infinite;
+}
+.content-wrapper {
+  position: relative;
+  z-index: 10;
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+  animation: floatContent 5s ease-in-out infinite;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(234,179,8,0.1);
+  border: 1px solid rgba(234,179,8,0.3);
+  padding: 12px 24px;
+  border-radius: 9999px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(16px);
+}
+.badge-text {
+  color: #fde68a;
+  font-weight: 600;
+}
+.heading {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 32px;
+  text-shadow: 0 0 30px rgba(250,204,21,0.4);
+}
+.heading-gradient {
+  display: block;
+  background: linear-gradient(to right, #fef9c3, #eab308, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: pulseText 3s ease-in-out infinite;
+}
+.description {
+  max-width: 896px;
+  margin: 0 auto 48px;
+  font-size: 1.25rem;
+  color: #cbd5e1;
+  line-height: 1.7;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  max-width: 1024px;
+  margin: 0 auto 56px;
+}
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 30px;
+  padding: 32px;
+  transition: all 0.5s ease;
+  cursor: default;
+}
+.stat-card:hover {
+  transform: translateY(-15px) scale(1.04);
+}
+.stat-card-yellow:hover { border-color: rgba(250,204,21,0.5); box-shadow: 0 0 50px rgba(250,204,21,0.25); }
+.stat-card-cyan:hover { border-color: rgba(34,211,238,0.5); box-shadow: 0 0 50px rgba(34,211,238,0.25); }
+.stat-card-green:hover { border-color: rgba(74,222,128,0.5); box-shadow: 0 0 50px rgba(74,222,128,0.25); }
+.stat-number { font-size: 3rem; font-weight: 900; color: #fff; margin: 16px 0 8px; }
+.stat-label { color: #94a3b8; }
+.sub-desc { max-width: 768px; margin: 0 auto 32px; font-size: 1.125rem; color: #cbd5e1; }
+.no-risk-text { color: #fde68a; font-weight: 600; font-size: 1.25rem; margin-bottom: 48px; }
+.cta-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(to right, #facc15, #eab308, #f97316);
+  color: #000;
+  font-weight: 900;
+  padding: 20px 48px;
+  border-radius: 16px;
+  font-size: 1.125rem;
+  box-shadow: 0 0 40px rgba(250,204,21,0.4);
+  margin-bottom: 64px;
+  text-decoration: none;
+  transition: transform 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.cta-btn:hover { transform: scale(1.05); }
+.cta-btn:active { transform: scale(0.95); }
+.cta-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  height: 100%;
+  width: 50%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent);
+  transform: skewX(-12deg);
+  animation: shimmer 2s ease-in-out infinite;
+}
+.traders-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.trader-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid #050816;
+  background: linear-gradient(135deg, #facc15, #eab308, #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 0 25px rgba(250,204,21,0.5);
+  transition: transform 0.2s;
+  margin-left: -16px;
+}
+.trader-avatar:first-child { margin-left: 0; }
+.trader-avatar:hover { transform: scale(1.15) translateY(-5px); }
+.trust-text { color: #cbd5e1; font-size: 1.125rem; margin-bottom: 40px; }
+.trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+.trust-item { display: flex; align-items: center; gap: 8px; }
+.trust-item span { color: #fff; font-weight: 700; }
+.trust-divider { width: 1px; height: 32px; background: #334155; }
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 16px 56px;
+  }
+
+  .bg-spotlight {
+    width: 700px;
+    height: 700px;
+  }
+
+  .bg-orb1 {
+    width: 280px;
+    height: 280px;
+    top: -60px;
+    left: -40px;
+  }
+
+  .bg-orb2 {
+    width: 320px;
+    height: 320px;
+  }
+
+  .coin-glow {
+    width: 42px;
+    height: 42px;
+  }
+
+  .coin-face {
+    font-size: 16px;
+  }
+
+  .content-wrapper {
+    padding: 0 8px;
+  }
+
+  .description {
+    font-size: 1rem;
+    margin-bottom: 32px;
+  }
+
+  .stats-grid {
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .stat-card {
+    padding: 24px;
+  }
+
+  .stat-number {
+    font-size: 2.3rem;
+  }
+
+  .sub-desc {
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+
+  .no-risk-text {
+    font-size: 1.1rem;
+    margin-bottom: 32px;
+  }
+
+  .cta-btn {
+    width: 100%;
+    padding: 16px 28px;
+    font-size: 1rem;
+    margin-bottom: 40px;
+  }
+
+  .traders-row {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .trader-avatar {
+    width: 52px;
+    height: 52px;
+    margin-left: -12px;
+  }
+
+  .trust-row {
+    gap: 20px;
+  }
+
+  .trust-divider {
+    height: 24px;
+  }
+}
+`;
+
+// ── Hero ───────────────────────────────────────────────────────────────────
 
 export default function Hero() {
-  // Set target date for countdown (next competition round)
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() + 13);
-  targetDate.setHours(23, 59, 59, 0);
+  const [coins, setCoins] = useState<HeroCoin[]>([]);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, i) => ({
+        id: i,
+        left: `${(i * 3.33 + 7) % 100}%`,
+        duration: 12 + (i % 10),
+        delay: (i * 0.17) % 5,
+      })),
+    []
+  );
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (Math.random() > 0.15) return;
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const batch: HeroCoin[] = Array.from({ length: 3 }, (_, i) => ({
+      id: Date.now() + Math.random() + i,
+      x: x + (Math.random() * 100 - 50),
+      y: y + (Math.random() * 100 - 50),
+    }));
+
+    setCoins((prev) => [...prev, ...batch]);
+
+    setTimeout(() => {
+      setCoins((prev) =>
+        prev.filter((coin) => !batch.some((c) => c.id === coin.id))
+      );
+    }, 2500);
+  };
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black z-0" />
-      <div
-        className="absolute inset-0 opacity-30 z-0"
-        style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1639133893916-a711d8af8c0a?q=80&w=1332&auto=format&fit=crop')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-gold/20 rounded-full blur-[120px] z-0 animate-pulse-slow" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-gold/10 rounded-full blur-[120px] z-0 animate-pulse-slow animation-delay-1000" />
-      <FloatingParticles />
+    <>
+      <style>{styles}</style>
+      <section
+        ref={sectionRef}
+        className="hero-section"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Background layers */}
+        <div className="bg-main-gradient" />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url('https://images.unsplash.com/photo-1639133893916-a711d8af8c0a?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.15,
+            zIndex: 0,
+          }}
+        />
+        <div className="bg-grid" />
+        <div className="bg-spotlight">
+          <div className="bg-spotlight-inner" />
+        </div>
+        <div className="bg-orb1" />
+        <div className="bg-orb2" />
 
-      {/* Content Container */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 py-12 md:py-16 lg:py-20">
-        {/* Horizontal Ticker */}
-        <HorizontalTicker />
+        {/* Bitcoin animated canvas */}
+        <BitcoinCanvas />
 
-        {/* Main Content */}
-        <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-4 py-2 mb-6 backdrop-blur-sm">
-            <Trophy size={18} className="text-gold" />
-            <span className="text-gold-light text-sm font-medium">
-              Asia's Biggest Demo Trading Competition
-            </span>
+        {/* Golden Cursor Trail */}
+        <TrailCanvas containerRef={sectionRef} />
+
+        {/* Floating particles */}
+        {particles.map((p) => (
+          <div
+            key={p.id}
+            style={{
+              position: "absolute",
+              left: p.left,
+              bottom: "-20px",
+              width: "4px",
+              height: "4px",
+              background: "#facc15",
+              borderRadius: "50%",
+              animation: `particleRise ${p.duration}s ${p.delay}s infinite`,
+              zIndex: 2,
+            }}
+          />
+        ))}
+
+        {/* Coins on hover */}
+        {coins.map((coin) => (
+          <div
+            key={coin.id}
+            className="coin-wrapper"
+            style={{
+              left: coin.x,
+              top: coin.y,
+              animation: `coinFloat 2.5s ease-out forwards`,
+            }}
+          >
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div className="coin-glow" />
+              <div className="coin-face">₿</div>
+            </div>
           </div>
+        ))}
 
-          {/* Heading */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
-            <span className="text-white">Join Asia's Biggest</span>
-            <span className="block bg-gradient-to-r from-gold via-gold-light to-gold bg-clip-text text-transparent mt-2">
-              Demo Trading Competition
-            </span>
+        {/* Content */}
+        <div className="content-wrapper">
+          <div className="badge">
+            <Trophy color="#facc15" size={20} />
+            <span className="badge-text">Asia's Biggest Demo Trading Competition</span>
+          </div>
+          <h1 className="heading">
+            Join Asia's Biggest
+            <span className="heading-gradient">Demo Trading Competition</span>
           </h1>
-
-          {/* Description */}
-          <p className="text-gray-300 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-8">
-            Trade with <span className="text-gold font-semibold">$10,000 virtual funds</span>, compete for{" "}
-            <span className="text-gold font-semibold">real cash-equivalent rewards</span>, and prove you belong
-            among the top traders.
+          <p className="description">
+            Trade with <strong>$10,000 virtual funds</strong>, compete for real
+            cash-equivalent rewards, and prove you belong among the top traders.
           </p>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10 md:mb-12">
+          <div className="stats-grid">
+            <div className="stat-card stat-card-yellow">
+              <Trophy color="#facc15" size={40} style={{ margin: "0 auto" }} />
+              <div className="stat-number">$2,000</div>
+              <p className="stat-label">Grand Prize</p>
+            </div>
+            <div className="stat-card stat-card-cyan">
+              <DollarSign color="#22d3ee" size={40} style={{ margin: "0 auto" }} />
+              <div className="stat-number">$10,000</div>
+              <p className="stat-label">Demo Balance</p>
+            </div>
+            <div className="stat-card stat-card-green">
+              <TrendingUp color="#4ade80" size={40} style={{ margin: "0 auto" }} />
+              <div className="stat-number">Top 20</div>
+              <p className="stat-label">Win Live-Account Rewards</p>
+            </div>
+          </div>
+          <p className="sub-desc">
+            Whether you're a day trader, scalper, or swing specialist — your
+            skills decide your rank.
+          </p>
+          <p className="no-risk-text">
+            No real money required. No risk. Just pure competition.
+          </p>
+          <a href="#contact" className="cta-btn">
+            <span className="cta-shimmer" />
+            Start Trading – Free Entry
+          </a>
+          <div className="traders-row">
             {[
-              { icon: Trophy, value: "$2,000", label: "Grand Prize", color: "from-yellow-500 to-yellow-600" },
-              { icon: DollarSign, value: "$10,000", label: "Demo Balance", color: "from-blue-500 to-blue-600" },
-              { icon: TrendingUp, value: "Top 20", label: "Win Live-Account Rewards", color: "from-green-500 to-green-600" },
-            ].map((stat, idx) => (
-              <div
-                key={idx}
-                className="group relative overflow-hidden bg-black/40 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-gold/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gold/20"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <stat.icon size={40} className="mx-auto text-gold mb-4 group-hover:scale-110 transition-transform duration-300" />
-                <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-gray-400 text-sm">{stat.label}</div>
+              "https://i.pravatar.cc/150?img=12",
+              "https://i.pravatar.cc/150?img=32",
+              "https://i.pravatar.cc/150?img=45",
+              "https://i.pravatar.cc/150?img=68",
+            ].map((avatar, index) => (
+              <div key={index} className="trader-avatar">
+                <img
+                  src={avatar}
+                  alt={`Trader ${index + 1}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "50%",
+                  }}
+                />
               </div>
             ))}
           </div>
-
-          {/* Sub Description */}
-          <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto mb-6">
-            Whether you're a day trader, scalper, or swing specialist — your skills decide your rank.
+          <p className="trust-text">
+            Trusted by Taiwan, TJR, JM, AMAS, and 50k+ other traders
           </p>
-
-          {/* No Risk Text */}
-          <div className="inline-flex items-center gap-2 bg-gold/10 rounded-full px-4 py-2 mb-8">
-            <ShieldCheck size={18} className="text-gold" />
-            <span className="text-gold-light font-medium">No real money required. No risk. Just pure competition.</span>
-          </div>
-
-          {/* Countdown Timer */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Clock size={20} className="text-gold" />
-              <span className="text-gray-300 font-medium">Registration closes in</span>
+          <div className="trust-row">
+            <div className="trust-item">
+              <Star color="#facc15" fill="#facc15" size={18} />
+              <span>Trustpilot</span>
             </div>
-            <CountdownTimer targetDate={targetDate} />
-          </div>
-
-          {/* CTA Button */}
-          <a
-            href="#register"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark hover:from-gold-dark hover:to-gold text-black font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-gold/30 mb-12"
-          >
-            Start Trading – Free Entry
-            <ArrowUpRight size={20} />
-          </a>
-
-          {/* Trust Section */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mb-8">
-            <div className="flex -space-x-2">
-              {[
-                "https://i.pravatar.cc/150?img=12",
-                "https://i.pravatar.cc/150?img=32",
-                "https://i.pravatar.cc/150?img=45",
-                "https://i.pravatar.cc/150?img=68",
-              ].map((avatar, idx) => (
-                <div
-                  key={idx}
-                  className="w-10 h-10 rounded-full border-2 border-black overflow-hidden transition-transform duration-300 hover:scale-110 hover:z-10"
-                >
-                  <img src={avatar} alt={`Trader ${idx + 1}`} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <Star size={16} className="text-gold fill-gold" />
-              <span className="text-gray-300 text-sm">Trusted by 50k+ traders</span>
-            </div>
-          </div>
-
-          {/* Trust Row */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-2">
-              <Star size={16} className="text-gold fill-gold" />
-              <span className="text-gray-400 text-xs">Trustpilot 4.9 ★</span>
-            </div>
-            <div className="w-px h-4 bg-white/20" />
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-gold" />
-              <span className="text-gray-400 text-xs">Powered by Capital</span>
+            <div className="trust-divider" />
+            <div className="trust-item">
+              <ShieldCheck color="#22d3ee" size={18} />
+              <span>Powered by Capital</span>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Tailwind CSS Custom Styles */}
-      <style>{`
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-scroll {
-          animation: scroll 20s linear infinite;
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.05); }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 6s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        .bg-gold {
-          background-color: #facc15;
-        }
-        .bg-gold\/10 {
-          background-color: rgba(250, 204, 21, 0.1);
-        }
-        .bg-gold\/20 {
-          background-color: rgba(250, 204, 21, 0.2);
-        }
-        .bg-gold\/5 {
-          background-color: rgba(250, 204, 21, 0.05);
-        }
-        .text-gold {
-          color: #facc15;
-        }
-        .text-gold-light {
-          color: #fde047;
-        }
-        .border-gold {
-          border-color: #facc15;
-        }
-        .border-gold\/20 {
-          border-color: rgba(250, 204, 21, 0.2);
-        }
-        .border-gold\/30 {
-          border-color: rgba(250, 204, 21, 0.3);
-        }
-        .border-gold\/50 {
-          border-color: rgba(250, 204, 21, 0.5);
-        }
-        .from-gold {
-          --tw-gradient-from: #facc15;
-          --tw-gradient-to: rgba(250, 204, 21, 0);
-          --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-        }
-        .to-gold-dark {
-          --tw-gradient-to: #eab308;
-        }
-        .hover\\:shadow-gold\/20:hover {
-          --tw-shadow-color: rgba(250, 204, 21, 0.2);
-        }
-        .hover\\:shadow-gold\/30:hover {
-          --tw-shadow-color: rgba(250, 204, 21, 0.3);
-        }
-        .shadow-gold\/20 {
-          --tw-shadow-color: rgba(250, 204, 21, 0.2);
-        }
-        .hover\\:from-gold-dark:hover {
-          --tw-gradient-from: #eab308;
-          --tw-gradient-to: rgba(234, 179, 8, 0);
-          --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-        }
-        .hover\\:to-gold:hover {
-          --tw-gradient-to: #facc15;
-        }
-        .hover\\:shadow-lg:hover {
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .group:hover .group-hover\\:scale-110 {
-          transform: scale(1.1);
-        }
-        .group:hover .group-hover\\:shadow-2xl {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-      `}</style>
-    </div>
+      </section>
+    </>
   );
 }

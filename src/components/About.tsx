@@ -106,7 +106,7 @@ const aboutStyles = `
   display: flex; justify-content: center; margin-bottom: 40px;
 }
 .about-countdown-inner {
-  background: yellow;
+  background: linear-gradient(to right, #facc15, #eab308, #f97316);
   border: 1px solid rgba(234,179,8,0.3);
   backdrop-filter: blur(16px);
   border-radius: 9999px;
