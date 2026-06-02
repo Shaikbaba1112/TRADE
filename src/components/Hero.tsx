@@ -6,11 +6,6 @@ import {
   Star,
   ShieldCheck,
   Clock,
-  Users,
-  Gift,
-  ChevronRight,
-  BarChart3,
-  Medal,
   Sparkles,
   ArrowUpRight,
 } from "lucide-react";
