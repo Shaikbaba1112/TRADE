@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Trophy, Users, DollarSign } from "lucide-react";
+import { Trophy, Users, DollarSign} from "lucide-react";
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Types (same as Hero) ──────────────────────────────────────────────────
 
 interface TrailDot {
   x: number;
@@ -162,7 +162,7 @@ function TrailCanvas({ containerRef }: { containerRef: React.RefObject<HTMLEleme
   );
 }
 
-// ── BitcoinCanvas (floating BTC symbols, glowing rings, nodes) ────────────
+// ── BitcoinCanvas (same as Hero) ──────────────────────────────────────────
 
 function BitcoinCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -415,7 +415,7 @@ function BitcoinCanvas() {
   );
 }
 
-// ── Styles (same rich animations as Hero) ─────────────────────────────────
+// ── Styles (with horizontal marquee animation) ────────────────────────────
 
 const styles = `
 @keyframes floatUp {
@@ -465,6 +465,12 @@ const styles = `
   20% { opacity: 1; transform: scale(1.3) rotate(144deg); }
   80% { opacity: 1; transform: scale(1) rotate(576deg); }
   100% { opacity: 0; transform: scale(0.5) rotate(720deg); }
+}
+
+/* Horizontal infinite scroll (JioHotstar style) */
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .achievements-section {
@@ -606,16 +612,25 @@ const styles = `
   color: #cbd5e1;
   line-height: 1.7;
 }
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-  max-width: 1024px;
+
+/* Horizontal stats marquee container */
+.stats-marquee {
+  width: 100%;
+  overflow: hidden;
   margin: 0 auto 56px;
+  padding: 12px 0;
+}
+.stats-track {
+  display: flex;
+  animation: marqueeScroll 25s linear infinite;
+  gap: 24px;
+}
+.stats-track:hover {
+  animation-play-state: paused;
 }
 .stat-card {
-  position: relative;
-  overflow: hidden;
+  flex-shrink: 0;
+  width: 260px;
   background: rgba(255,255,255,0.03);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.1);
@@ -708,6 +723,16 @@ const styles = `
 .trust-item { display: flex; align-items: center; gap: 8px; }
 .trust-item span { color: #fff; font-weight: 700; }
 .trust-divider { width: 1px; height: 32px; background: #334155; }
+.achievements-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #facc15;
+  border-radius: 50%;
+  animation: particleRise 12s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
 
 @media (max-width: 768px) {
   .achievements-section {
@@ -727,36 +752,20 @@ const styles = `
   .coin-face {
     font-size: 16px;
   }
-  .content-wrapper {
-    padding: 0 8px;
-  }
-  .description {
-    font-size: 1rem;
-    margin-bottom: 32px;
-  }
-  .stats-grid {
-    gap: 16px;
-    margin-bottom: 40px;
-  }
   .stat-card {
+    width: 220px;
     padding: 24px;
   }
   .stat-number {
     font-size: 2.3rem;
   }
-  .sub-desc {
+  .description {
     font-size: 1rem;
-    margin-bottom: 24px;
   }
   .cta-btn {
     width: 100%;
     padding: 16px 28px;
     font-size: 1rem;
-    margin-bottom: 40px;
-  }
-  .traders-row {
-    gap: 12px;
-    flex-wrap: wrap;
   }
   .trader-avatar {
     width: 52px;
@@ -765,9 +774,6 @@ const styles = `
   }
   .trust-row {
     gap: 20px;
-  }
-  .trust-divider {
-    height: 24px;
   }
 }
 `;
@@ -818,6 +824,9 @@ export default function Achievements() {
     { icon: Users, value: "5K+", title: "Traders" },
   ];
 
+  // Duplicate stats for seamless looping
+  const duplicatedStats = [...stats, ...stats];
+
   return (
     <>
       <style>{styles}</style>
@@ -846,31 +855,25 @@ export default function Achievements() {
         <div className="bg-orb1" />
         <div className="bg-orb2" />
 
-        {/* Bitcoin animated canvas */}
+        {/* Animated canvases */}
         <BitcoinCanvas />
-
-        {/* Golden Cursor Trail */}
         <TrailCanvas containerRef={sectionRef} />
 
         {/* Floating particles */}
         {particles.map((p) => (
           <div
             key={p.id}
+            className="achievements-particle"
             style={{
-              position: "absolute",
               left: p.left,
               bottom: "-20px",
-              width: "4px",
-              height: "4px",
-              background: "#facc15",
-              borderRadius: "50%",
-              animation: `particleRise ${p.duration}s ${p.delay}s infinite`,
-              zIndex: 2,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
             }}
           />
         ))}
 
-        {/* Coins on hover */}
+        {/* Coin burst on hover */}
         {coins.map((coin) => (
           <div
             key={coin.id}
@@ -901,18 +904,29 @@ export default function Achievements() {
           <p className="description">
             Thousands of traders compete every month and win exciting rewards.
           </p>
-          <div className="stats-grid">
-            {stats.map((stat, idx) => {
-              const Icon = stat.icon;
-              return (
-                <div key={idx} className="stat-card">
-                  <Icon color={idx === 0 ? "#facc15" : idx === 1 ? "#22d3ee" : "#4ade80"} size={48} style={{ margin: "0 auto" }} />
-                  <div className="stat-number">{stat.value}</div>
-                  <p className="stat-label">{stat.title}</p>
-                </div>
-              );
-            })}
+
+          {/* HORIZONTAL MOVING STATS (JioHotstar style) */}
+          <div className="stats-marquee">
+            <div className="stats-track">
+              {duplicatedStats.map((stat, idx) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={idx} className="stat-card">
+                    <Icon
+                      color={
+                        idx % 3 === 0 ? "#facc15" : idx % 3 === 1 ? "#22d3ee" : "#4ade80"
+                      }
+                      size={48}
+                      style={{ margin: "0 auto" }}
+                    />
+                    <div className="stat-number">{stat.value}</div>
+                    <p className="stat-label">{stat.title}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
+
           <p className="sub-desc">
             Trade smart, stay disciplined, and compete against Asia's fastest-growing community of traders.
           </p>

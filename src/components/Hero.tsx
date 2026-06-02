@@ -1,6 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Trophy, Star, ShieldCheck } from "lucide-react";
-
+import { Trophy, DollarSign, TrendingUp, Star, ShieldCheck} from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -412,7 +411,7 @@ function BitcoinCanvas() {
   );
 }
 
-/* ── Styles ── */
+/* ── Styles (with horizontal marquee) ── */
 const styles = `
 @keyframes floatUp {
   0% { opacity: 0; transform: translateY(0) scale(0); }
@@ -461,6 +460,11 @@ const styles = `
   20% { opacity: 1; transform: scale(1.3) rotate(144deg); }
   80% { opacity: 1; transform: scale(1) rotate(576deg); }
   100% { opacity: 0; transform: scale(0.5) rotate(720deg); }
+}
+/* Horizontal marquee animation */
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .hero-section {
@@ -580,7 +584,7 @@ const styles = `
   font-weight: 600;
 }
 .heading {
-  font-size: clamp(2.5rem, 8vw, 1rem);
+  font-size: clamp(2.5rem, 8vw, 5rem);
   font-weight: 900;
   color: #fff;
   line-height: 1.1;
@@ -696,98 +700,131 @@ const styles = `
 .trust-item span { color: #fff; font-weight: 700; }
 .trust-divider { width: 1px; height: 32px; background: #334155; }
 
+/* Horizontal moving ticker (JioHotstar style) */
+.hero-marquee {
+  width: 100%;
+  overflow: hidden;
+  margin: 32px 0 48px;
+  padding: 12px 0;
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid rgba(250,204,21,0.2);
+  border-bottom: 1px solid rgba(250,204,21,0.2);
+}
+.marquee-track {
+  display: flex;
+  animation: marqueeScroll 25s linear infinite;
+  gap: 32px;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+.marquee-item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(250,204,21,0.1);
+  padding: 8px 24px;
+  border-radius: 40px;
+  border: 1px solid rgba(250,204,21,0.3);
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+  color: #fde68a;
+  transition: all 0.3s ease;
+}
+.marquee-item:hover {
+  transform: scale(1.05);
+  background: rgba(250,204,21,0.2);
+  border-color: #facc15;
+  box-shadow: 0 0 15px rgba(250,204,21,0.3);
+}
+.marquee-icon {
+  font-size: 1.2rem;
+}
+
 @media (max-width: 768px) {
   .hero-section {
     padding: 80px 16px 56px;
   }
-
   .bg-spotlight {
     width: 700px;
     height: 700px;
   }
-
   .bg-orb1 {
     width: 280px;
     height: 280px;
     top: -60px;
     left: -40px;
   }
-
   .bg-orb2 {
     width: 320px;
     height: 320px;
   }
-
   .coin-glow {
     width: 42px;
     height: 42px;
   }
-
   .coin-face {
     font-size: 16px;
   }
-
   .content-wrapper {
     padding: 0 8px;
   }
-
   .description {
     font-size: 1rem;
     margin-bottom: 32px;
   }
-
   .stats-grid {
     gap: 16px;
     margin-bottom: 40px;
   }
-
   .stat-card {
     padding: 24px;
   }
-
   .stat-number {
     font-size: 2.3rem;
   }
-
   .sub-desc {
     font-size: 1rem;
     margin-bottom: 24px;
   }
-
   .no-risk-text {
     font-size: 1.1rem;
     margin-bottom: 32px;
   }
-
   .cta-btn {
     width: 100%;
     padding: 16px 28px;
     font-size: 1rem;
     margin-bottom: 40px;
   }
-
   .traders-row {
     gap: 12px;
     flex-wrap: wrap;
   }
-
   .trader-avatar {
     width: 52px;
     height: 52px;
     margin-left: -12px;
   }
-
   .trust-row {
     gap: 20px;
   }
-
   .trust-divider {
     height: 24px;
+  }
+  .hero-marquee {
+    margin: 24px 0 32px;
+  }
+  .marquee-item {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    gap: 8px;
   }
 }
 `;
 
-// ── Hero ───────────────────────────────────────────────────────────────────
+// ── Hero Component ───────────────────────────────────────────────────────
 
 export default function Hero() {
   const [coins, setCoins] = useState<HeroCoin[]>([]);
@@ -826,6 +863,17 @@ export default function Hero() {
       );
     }, 2500);
   };
+
+  // Data for horizontal marquee
+  const marqueeItems = [
+    { text: "🚀 No Real Money Required", icon: "🚀" },
+    { text: "💰 No Deposit Needed", icon: "💰" },
+    { text: "⚡ Instant MT5 Access", icon: "⚡" },
+    { text: "🏆 Win $2,000 Grand Prize", icon: "🏆" },
+    { text: "📊 Trade with $10,000 Virtual Funds", icon: "📊" },
+    { text: "🔥 Real Cash Rewards", icon: "🔥" },
+  ];
+  const duplicatedMarquee = [...marqueeItems, ...marqueeItems];
 
   return (
     <>
@@ -911,6 +959,38 @@ export default function Hero() {
             Trade with <strong>$10,000 virtual funds</strong>, compete for real
             cash-equivalent rewards, and prove you belong among the top traders.
           </p>
+
+          {/* HORIZONTAL MOVING COMPONENT (JioHotstar style) */}
+          <div className="hero-marquee">
+            <div className="marquee-track">
+              {duplicatedMarquee.map((item, idx) => (
+                <div key={idx} className="marquee-item">
+                  <span className="marquee-icon">{item.icon}</span>
+                  <span>{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats Grid (unchanged) */}
+          <div className="stats-grid">
+            <div className="stat-card stat-card-yellow">
+              <Trophy color="#facc15" size={40} style={{ margin: "0 auto" }} />
+              <div className="stat-number">$2,000</div>
+              <p className="stat-label">Grand Prize</p>
+            </div>
+            <div className="stat-card stat-card-cyan">
+              <DollarSign color="#22d3ee" size={40} style={{ margin: "0 auto" }} />
+              <div className="stat-number">$10,000</div>
+              <p className="stat-label">Demo Balance</p>
+            </div>
+            <div className="stat-card stat-card-green">
+              <TrendingUp color="#4ade80" size={40} style={{ margin: "0 auto" }} />
+              <div className="stat-number">Top 20</div>
+              <p className="stat-label">Win Live-Account Rewards</p>
+            </div>
+          </div>
+
           <p className="sub-desc">
             Whether you're a day trader, scalper, or swing specialist — your
             skills decide your rank.
